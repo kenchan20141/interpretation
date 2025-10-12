@@ -313,7 +313,7 @@
         // --- API 配置 ---
         const API_KEYS = ["sk-p-9-aIT4kSvvL_l4HEAReA"];
         let currentApiKeyIndex = 0;
-        const API_URL_BASE = "https://chatapi.akash.network/api/v1/chat/completions"; // (修訂) 改為 BASE URL
+        const API_URL_BASE = "https://chatapi.akash.network/api/v1/chat/completions";
         const MODEL = "Qwen3-235B-A22B-Instruct-2507-FP8";
 
         // --- DOM 元素獲取 ---
@@ -328,18 +328,17 @@
             questionLoader: document.getElementById('question-loader'),
             feedbackLoader: document.getElementById('feedback-loader'),
             modeToggleButton: document.getElementById('mode-toggle-button'),
-            questionTypeSelector: document.getElementById('question-type-selector'), // (恢復)
-            typeButtons: document.querySelectorAll('.type-button'), // (恢復)
+            questionTypeSelector: document.getElementById('question-type-selector'),
+            typeButtons: document.querySelectorAll('.type-button'),
         };
         
         // --- 狀態管理 ---
         let isCustomMode = false;
-        const usedKeywords = new Set();
+        const usedKeywords = new Set(); // (修訂) 用於儲存已生成問題的關鍵詞
 
         // --- 核心 API 調用函數 ---
         async function getApiResponse(prompt, temperature) {
             try {
-                // **(終極修訂) 附加時間戳與隨機字串，徹底禁用任何形式的快取**
                 const cacheBuster = `t=${new Date().getTime()}&r=${Math.random().toString(36).substring(7)}`;
                 const uniqueUrl = `${API_URL_BASE}?${cacheBuster}`;
 
@@ -394,22 +393,24 @@
             UIManager.resetUI();
 
             if (isCustomMode) {
-                ui.questionTypeSelector.classList.add('hidden'); // (恢復)
+                ui.questionTypeSelector.classList.add('hidden');
                 ui.questionContainer.setAttribute('contenteditable', 'true');
                 ui.questionContainer.textContent = ''; 
                 ui.questionContainer.style.opacity = 1;
                 ui.answerContainer.classList.remove('hidden');
                 ui.questionContainer.focus();
             } else {
-                ui.questionTypeSelector.classList.remove('hidden'); // (恢復)
+                ui.questionTypeSelector.classList.remove('hidden');
                 getNewQuestion();
             }
         }
         
+        // (修訂) 新增函數：從問題中提取關鍵詞並儲存
         function extractAndStoreKeyword(question) {
+            // 嘗試從「為什麼你喜歡喝冰水？」中匹配「喝冰水」
             const match = question.match(/^(?:為什麼|如何|你為什麼)(.+?)[？?]$/);
             if (match && match[1]) {
-                const keyword = match[1].trim();
+                const keyword = match[1].trim().replace(/^你(為什麼|如何)?/, '').trim(); // 移除句首的"你"
                 usedKeywords.add(keyword);
             }
         }
@@ -420,7 +421,6 @@
             UIManager.showLoader(ui.questionLoader);
             isCustomMode = false;
 
-            // (恢復) 根據用戶選擇的題型生成不同的 Prompt
             const selectedType = document.querySelector('.type-button.active').dataset.type;
             let basePrompt, examplePrompt;
 
@@ -434,13 +434,14 @@
             
             let prompt = `${basePrompt}問題必須以「為什麼」或「如何」開頭。${examplePrompt}請只輸出問題本身，不要有任何多餘文字或引號。`;
             
+            // (修訂) 如果有歷史紀錄，將其加入 prompt 以避免重複
             if (usedKeywords.size > 0) {
                 const keywordsToAvoid = [...usedKeywords].join('、');
                 prompt += `\n\n為了避免重複，請不要生成與以下主題相關的問題：${keywordsToAvoid}。`;
             }
 
             const newQuestion = await getApiResponse(prompt, 0.95);
-            extractAndStoreKeyword(newQuestion);
+            extractAndStoreKeyword(newQuestion); // (修訂) 儲存新問題的關鍵詞
             UIManager.hideLoader(ui.questionLoader);
             
             ui.questionContainer.textContent = newQuestion;
@@ -545,19 +546,19 @@
         ui.nextQuestionButton.addEventListener('click', getNewQuestion);
         ui.modeToggleButton.addEventListener('click', toggleInputMode);
 
-        // (恢復) 題型按鈕事件監聽
         ui.typeButtons.forEach(button => {
             button.addEventListener('click', () => {
                 if (!button.classList.contains('active')) {
                     ui.typeButtons.forEach(btn => btn.classList.remove('active'));
                     button.classList.add('active');
-                    usedKeywords.clear();
+                    usedKeywords.clear(); // (修訂) 切換題型時，清空歷史紀錄
                     getNewQuestion();
                 }
             });
         });
 
         // --- 頁面首次加載 ---
+        // (修訂) 確保一進入頁面就獲取一個新問題
         document.addEventListener('DOMContentLoaded', getNewQuestion);
     </script>
 
