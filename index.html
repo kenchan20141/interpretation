@@ -76,7 +76,7 @@
             fill: none;
         }
 
-        /* --- (恢復) 題型選擇器 --- */
+        /* --- 題型選擇器 --- */
         .type-selector {
             display: flex;
             justify-content: center;
@@ -106,7 +106,6 @@
         }
 
         /* --- 核心元素 --- */
-        /* (修訂) 問題容器與刷新按鈕的包裹器 */
         #question-wrapper {
             display: flex;
             align-items: center;
@@ -114,7 +113,6 @@
             gap: 0.75rem;
             margin-bottom: 2rem;
             margin-top: 1.5rem;
-            /* 修訂第一點：設定寬度為90%並置中 */
             width: 90%;
             margin-left: auto;
             margin-right: auto;
@@ -129,7 +127,7 @@
             transition: opacity 0.4s ease-in-out;
             padding: 0.5rem;
             border-radius: 4px;
-            flex-grow: 1; /* 佔據主要空間 */
+            flex-grow: 1; 
         }
         
         #question-container[contenteditable="true"] {
@@ -150,7 +148,6 @@
             pointer-events: none;
         }
 
-        /* (修訂) 刷新按鈕樣式 */
         #refresh-question-button {
             background: none;
             border: none;
@@ -335,10 +332,8 @@
             <button class="type-button" data-type="philosophy">哲學</button>
         </div>
         
-        <!-- (修訂) 新增包裹器 -->
         <div id="question-wrapper">
             <div id="question-container" contenteditable="false"></div>
-            <!-- (修訂) 新增刷新按鈕 -->
             <button id="refresh-question-button" title="重新生成題目">
                 <svg viewBox="0 0 24 24">
                     <path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4"></path>
@@ -383,7 +378,7 @@
             modeToggleButton: document.getElementById('mode-toggle-button'),
             questionTypeSelector: document.getElementById('question-type-selector'),
             typeButtons: document.querySelectorAll('.type-button'),
-            refreshQuestionButton: document.getElementById('refresh-question-button'), // (修訂) 新增刷新按鈕
+            refreshQuestionButton: document.getElementById('refresh-question-button'),
         };
         
         // --- 狀態管理 ---
@@ -448,7 +443,7 @@
 
             if (isCustomMode) {
                 ui.questionTypeSelector.classList.add('hidden');
-                ui.refreshQuestionButton.classList.add('hidden'); // (修訂) 隱藏刷新按鈕
+                ui.refreshQuestionButton.classList.add('hidden');
                 ui.questionContainer.setAttribute('contenteditable', 'true');
                 ui.questionContainer.textContent = ''; 
                 ui.questionContainer.style.opacity = 1;
@@ -456,7 +451,7 @@
                 ui.questionContainer.focus();
             } else {
                 ui.questionTypeSelector.classList.remove('hidden');
-                ui.refreshQuestionButton.classList.remove('hidden'); // (修訂) 顯示刷新按鈕
+                ui.refreshQuestionButton.classList.remove('hidden');
                 getNewQuestion(false);
             }
         }
@@ -470,12 +465,11 @@
         }
 
         // --- 獲取新問題 (AI模式) ---
-        // 修訂第三點：增加 isRefresh 參數
         async function getNewQuestion(isRefresh = false) {
             UIManager.resetUI();
             UIManager.showLoader(ui.questionLoader);
             isCustomMode = false;
-            ui.refreshQuestionButton.classList.remove('hidden'); // (修訂) 確保刷新按鈕可見
+            ui.refreshQuestionButton.classList.remove('hidden');
 
             const selectedType = document.querySelector('.type-button.active').dataset.type;
             let basePrompt, examplePrompt;
@@ -483,9 +477,9 @@
             if (selectedType === 'life') {
                 basePrompt = "請用繁體中文為我生成一個簡短、個人化、關於日常偏好或經驗的闡釋思維訓練問題。";
                 examplePrompt = "例如：「你為什麼喜歡雨天？」、「你為什麼不喜歡吃苦瓜？」、「你為什麼偏愛獨自旅行？」。";
-            } else { // philosophy
-                basePrompt = "請用繁體中文為我生成一個簡短、能引發深度思考的闡釋思維訓練問題。";
-                examplePrompt = "例如：「為什麼文學能提高修養？」、「人如何才能面對失敗？」、「為什麼寂寞時更容易看清自己？」。";
+            } else { // philosophy - (修訂) 更新指令與範例
+                basePrompt = "請用繁體中文為我生成一個簡短、生活化、但又能引發思考的問題。";
+                examplePrompt = "例如：「為什麼整理房間能讓心情變好？」、「為什麼我們會在意陌生人的看法？」、「為什麼我們會對舊物品產生感情？」。";
             }
             
             let prompt = `${basePrompt}問題必須以「為什麼」或「如何」開頭。問題長度必須嚴格限制在 15 個字以內。${examplePrompt}請只輸出問題本身，不要有任何多餘文字或引號。`;
@@ -495,14 +489,11 @@
                 prompt += `\n\n為了避免重複，請不要生成與以下主題相關的問題：${keywordsToAvoid}。`;
             }
 
-            // --- 修訂第三點：開始 ---
-            // 根據是否為「重新生成」以及問題類型，使用不同的符號來確保 API 指令不同。
-            if (isRefresh && selectedType === 'philosophy') {
-                prompt += '。。'; // 「哲學」題型重新生成時使用「。。」
-            } else {
-                prompt += '。'; // 「生活」題型重新生成，或所有題型的「下一題」時使用「。」
+            // --- (修訂) 統一刷新邏輯 ---
+            // 為了確保 API 在刷新時能生成新題目（避免快取），在指令中加入一個獨特的提示。
+            if (isRefresh) {
+                prompt += `\n\n(請務必生成一個與上次完全不同的新問題)`;
             }
-            // --- 修訂第三點：結束 ---
 
             const newQuestion = await getApiResponse(prompt, 0.95);
             extractAndStoreKeyword(newQuestion);
@@ -605,7 +596,7 @@
             }
         }
 
-        // --- 事件監聽 (修訂第三點) ---
+        // --- 事件監聽 ---
         ui.submitButton.addEventListener('click', getFeedback);
         ui.nextQuestionButton.addEventListener('click', () => getNewQuestion(false));
         ui.modeToggleButton.addEventListener('click', toggleInputMode);
@@ -624,8 +615,7 @@
             });
         });
 
-        // --- 頁面首次加載 (修訂第三點) ---
-        // 首次加載視為獲取新問題 (isRefresh = false)
+        // --- 頁面首次加載 ---
         document.addEventListener('DOMContentLoaded', () => getNewQuestion(false));
     </script>
 
