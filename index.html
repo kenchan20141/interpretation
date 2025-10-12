@@ -76,6 +76,35 @@
             fill: none;
         }
 
+        /* --- (恢復) 題型選擇器 --- */
+        .type-selector {
+            display: flex;
+            justify-content: center;
+            gap: 0.75rem;
+            margin-bottom: 2rem;
+        }
+        .type-button {
+            background-color: transparent;
+            color: var(--wabi-text-secondary);
+            border: 1px solid var(--wabi-border);
+            padding: 0.5rem 1.25rem;
+            font-size: 0.85rem;
+            font-family: var(--font-sans);
+            font-weight: 600;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+        }
+        .type-button:hover {
+            background-color: var(--wabi-bg);
+            color: var(--wabi-text-primary);
+        }
+        .type-button.active {
+            background-color: var(--wabi-text-primary);
+            color: var(--wabi-surface);
+            border-color: var(--wabi-text-primary);
+        }
+
         /* --- 核心元素 --- */
         #question-container {
             text-align: center;
@@ -95,6 +124,7 @@
             background-color: #faf9f7;
             border: 1px solid var(--wabi-border);
             text-align: left;
+            margin-top: 0;
         }
         #question-container[contenteditable="true"]:focus {
             border-color: #b8b3a9;
@@ -205,7 +235,6 @@
             font-weight: 700;
         }
 
-        /* **新增：分數顯示樣式** */
         .score-display-wrapper {
             display: flex;
             justify-content: center;
@@ -249,13 +278,20 @@
 </head>
 <body>
 
-    <div class="container">
+     <div class="container">
         <button id="mode-toggle-button" title="切換 AI 擬題 / 自訂題目">
             <svg viewBox="0 0 24 24">
                  <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4"></path>
                  <path d="M13.5 6.5l4 4"></path>
             </svg>
         </button>
+
+        
+        <!-- (恢復) 題型選擇器 -->
+        <div id="question-type-selector" class="type-selector">
+            <button class="type-button active" data-type="life">生活</button>
+            <button class="type-button" data-type="philosophy">哲學</button>
+        </div>
 
         <div id="question-container" contenteditable="false"></div>
         <div class="loader" id="question-loader"></div>
@@ -277,7 +313,7 @@
         // --- API 配置 ---
         const API_KEYS = ["sk-p-9-aIT4kSvvL_l4HEAReA"];
         let currentApiKeyIndex = 0;
-        const API_URL = "https://chatapi.akash.network/api/v1/chat/completions";
+        const API_URL_BASE = "https://chatapi.akash.network/api/v1/chat/completions"; // (修訂) 改為 BASE URL
         const MODEL = "Qwen3-235B-A22B-Instruct-2507-FP8";
 
         // --- DOM 元素獲取 ---
@@ -292,6 +328,8 @@
             questionLoader: document.getElementById('question-loader'),
             feedbackLoader: document.getElementById('feedback-loader'),
             modeToggleButton: document.getElementById('mode-toggle-button'),
+            questionTypeSelector: document.getElementById('question-type-selector'), // (恢復)
+            typeButtons: document.querySelectorAll('.type-button'), // (恢復)
         };
         
         // --- 狀態管理 ---
@@ -301,7 +339,11 @@
         // --- 核心 API 調用函數 ---
         async function getApiResponse(prompt, temperature) {
             try {
-                const response = await fetch(API_URL, {
+                // **(終極修訂) 附加時間戳與隨機字串，徹底禁用任何形式的快取**
+                const cacheBuster = `t=${new Date().getTime()}&r=${Math.random().toString(36).substring(7)}`;
+                const uniqueUrl = `${API_URL_BASE}?${cacheBuster}`;
+
+                const response = await fetch(uniqueUrl, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -342,6 +384,7 @@
                 ui.submitButton.disabled = false;
                 ui.answerTextarea.disabled = false;
                 ui.questionContainer.removeAttribute('contenteditable');
+                ui.questionContainer.textContent = '';
             }
         };
 
@@ -351,30 +394,45 @@
             UIManager.resetUI();
 
             if (isCustomMode) {
+                ui.questionTypeSelector.classList.add('hidden'); // (恢復)
                 ui.questionContainer.setAttribute('contenteditable', 'true');
                 ui.questionContainer.textContent = ''; 
                 ui.questionContainer.style.opacity = 1;
                 ui.answerContainer.classList.remove('hidden');
                 ui.questionContainer.focus();
             } else {
+                ui.questionTypeSelector.classList.remove('hidden'); // (恢復)
                 getNewQuestion();
             }
         }
         
         function extractAndStoreKeyword(question) {
-            const match = question.match(/你為什麼(?:不喜歡|喜歡|偏愛|選擇|會)?(.+?)[？?]/);
+            const match = question.match(/^(?:為什麼|如何|你為什麼)(.+?)[？?]$/);
             if (match && match[1]) {
                 const keyword = match[1].trim();
                 usedKeywords.add(keyword);
             }
         }
 
+        // --- 獲取新問題 (AI模式) ---
         async function getNewQuestion() {
             UIManager.resetUI();
             UIManager.showLoader(ui.questionLoader);
             isCustomMode = false;
 
-            let prompt = "請為我生成一個非常簡短、生活化的闡釋思維訓練問題。問題必須以「你為什麼...」開頭，引導用戶解釋一個個人偏好。例如：「你為什麼喜歡雨天？」、「你為什麼不喜歡吃苦瓜？」、「你為什麼偏愛獨自旅行？」。請只輸出問題本身，不要有任何多餘文字或引號。";
+            // (恢復) 根據用戶選擇的題型生成不同的 Prompt
+            const selectedType = document.querySelector('.type-button.active').dataset.type;
+            let basePrompt, examplePrompt;
+
+            if (selectedType === 'life') {
+                basePrompt = "請為我生成一個簡短、個人化、關於日常偏好或經驗的闡釋思維訓練問題。";
+                examplePrompt = "例如：「你為什麼喜歡雨天？」、「你為什麼不喜歡吃苦瓜？」、「你為什麼偏愛獨自旅行？」。";
+            } else { // philosophy
+                basePrompt = "請為我生成一個簡短、能引發深度思考、關於抽象概念或人生價值的闡釋思維訓練問題。";
+                examplePrompt = "例如：「為什麼文學能提高修養？」、「人如何才能面對失敗？」、「為什麼寂寞的時候反而更容易看清自己？」。";
+            }
+            
+            let prompt = `${basePrompt}問題必須以「為什麼」或「如何」開頭。${examplePrompt}請只輸出問題本身，不要有任何多餘文字或引號。`;
             
             if (usedKeywords.size > 0) {
                 const keywordsToAvoid = [...usedKeywords].join('、');
@@ -408,7 +466,6 @@
             ui.answerTextarea.disabled = true;
             UIManager.showLoader(ui.feedbackLoader);
             
-            // **修訂：更新 Prompt，要求 AI 提供分數**
             const prompt = `
                 作為一個嚴格但友善的思維闡釋教練，請針對以下回答提供回饋和評分。
 
@@ -438,7 +495,6 @@
             const feedbackText = await getApiResponse(prompt, 0.6);
             UIManager.hideLoader(ui.feedbackLoader);
             
-            // **修訂：解析帶有分數的回應**
             const scoreMatch = feedbackText.match(/\[SCORE:\s*(\d+)\s*\]/);
             const score = scoreMatch ? scoreMatch[1] : 'N/A';
 
@@ -456,7 +512,6 @@
                 });
                 exampleHtml += '</ol>';
 
-                // **修訂：渲染包含分數的完整回饋 HTML**
                 ui.feedbackContainer.innerHTML = `
                     <div class="feedback-section">
                         <h2 class="feedback-heading">分數</h2>
@@ -489,6 +544,18 @@
         ui.submitButton.addEventListener('click', getFeedback);
         ui.nextQuestionButton.addEventListener('click', getNewQuestion);
         ui.modeToggleButton.addEventListener('click', toggleInputMode);
+
+        // (恢復) 題型按鈕事件監聽
+        ui.typeButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                if (!button.classList.contains('active')) {
+                    ui.typeButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    usedKeywords.clear();
+                    getNewQuestion();
+                }
+            });
+        });
 
         // --- 頁面首次加載 ---
         document.addEventListener('DOMContentLoaded', getNewQuestion);
