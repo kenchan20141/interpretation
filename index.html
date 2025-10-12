@@ -481,10 +481,10 @@
             let basePrompt, examplePrompt;
 
             if (selectedType === 'life') {
-                basePrompt = "請為我生成一個簡短、個人化、關於日常偏好或經驗的闡釋思維訓練問題。";
+                basePrompt = "請用繁體中文為我生成一個簡短、個人化、關於日常偏好或經驗的闡釋思維訓練問題。";
                 examplePrompt = "例如：「你為什麼喜歡雨天？」、「你為什麼不喜歡吃苦瓜？」、「你為什麼偏愛獨自旅行？」。";
             } else { // philosophy
-                basePrompt = "請為我生成一個簡短、能引發深度思考的闡釋思維訓練問題。";
+                basePrompt = "請用繁體中文為我生成一個簡短、能引發深度思考的闡釋思維訓練問題。";
                 examplePrompt = "例如：「為什麼文學能提高修養？」、「人如何才能面對失敗？」、「為什麼寂寞時更容易看清自己？」。";
             }
             
@@ -532,7 +532,7 @@
             UIManager.showLoader(ui.feedbackLoader);
             
             const prompt = `
-                作為一個嚴格但友善的思維闡釋教練，請針對以下回答提供回饋和評分。
+                作為一個嚴格但友善的思維闡釋教練，請用繁體中文針對以下回答提供回饋和評分。
 
                 ### 問題:
                 「${currentQuestion}」
