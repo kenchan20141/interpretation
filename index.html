@@ -480,10 +480,10 @@
                 examplePrompt = "例如：「你為什麼喜歡雨天？」、「你為什麼不喜歡吃苦瓜？」、「你為什麼偏愛獨自旅行？」。";
             } else { // philosophy
                 basePrompt = "請為我生成一個簡短、能引發深度思考的闡釋思維訓練問題。";
-                examplePrompt = "例如：「為什麼文學能提高修養？」、「人如何才能面對失敗？」、「為什麼寂寞的時候反而更容易看清自己？」。";
+                examplePrompt = "例如：「為什麼文學能提高修養？」、「人如何才能面對失敗？」、「為什麼寂寞時更容易看清自己？」。";
             }
             
-            let prompt = `${basePrompt}問題必須以「為什麼」或「如何」開頭。${examplePrompt}請只輸出問題本身，不要有任何多餘文字或引號。`;
+            let prompt = `${basePrompt}問題必須以「為什麼」或「如何」開頭。問題長度必須嚴格限制在 15 個字以內。${examplePrompt}請只輸出問題本身，不要有任何多餘文字或引號。`;
             
             if (usedKeywords.size > 0) {
                 const keywordsToAvoid = [...usedKeywords].join('、');
