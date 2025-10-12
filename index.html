@@ -490,7 +490,11 @@
                 prompt += `\n\n為了避免重複，請不要生成與以下主題相關的問題：${keywordsToAvoid}。`;
             }
 
-            prompt += '。'; // (修訂) 為確保指令不同，在結尾加上符號
+            // --- 修訂開始 ---
+            // 為確保每次發送的指令不同，在指令結尾加上一個「。」符號。
+            // 這適用於「下一題」和「重新生成」等所有調用此函數的操作。
+            prompt += '。';
+            // --- 修訂結束 ---
 
             const newQuestion = await getApiResponse(prompt, 0.95);
             extractAndStoreKeyword(newQuestion);
