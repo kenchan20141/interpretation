@@ -318,7 +318,7 @@
 </head>
 <body>
 
-     <div class="container">
+    <div class="container">
         <button id="mode-toggle-button" title="切換 AI 擬題 / 自訂題目">
             <svg viewBox="0 0 24 24">
                  <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4"></path>
@@ -326,7 +326,6 @@
             </svg>
         </button>
 
-        
         <div id="question-type-selector" class="type-selector">
             <button class="type-button active" data-type="life">生活</button>
             <button class="type-button" data-type="philosophy">哲學</button>
@@ -383,7 +382,36 @@
         
         // --- 狀態管理 ---
         let isCustomMode = false;
-        const usedKeywords = new Set();
+        const STORAGE_KEY_PREFIX = 'clarifyThinkingUsedQuestions_'; // (修訂) LocalStorage 的 Key 前綴
+        let currentQuestionType = 'life'; // 預設題型
+        let usedQuestions = new Set(); // (修訂) 用於儲存已出現過的題目
+
+        // --- (修訂) 本地儲存管理 ---
+        function getStorageKey() {
+            return STORAGE_KEY_PREFIX + currentQuestionType;
+        }
+
+        function saveUsedQuestions() {
+            try {
+                localStorage.setItem(getStorageKey(), JSON.stringify([...usedQuestions]));
+            } catch (e) {
+                console.error("無法儲存問題至 localStorage:", e);
+            }
+        }
+
+        function loadUsedQuestions() {
+            try {
+                const storedQuestions = localStorage.getItem(getStorageKey());
+                if (storedQuestions) {
+                    usedQuestions = new Set(JSON.parse(storedQuestions));
+                } else {
+                    usedQuestions = new Set();
+                }
+            } catch (e) {
+                console.error("無法從 localStorage 讀取問題:", e);
+                usedQuestions = new Set();
+            }
+        }
 
         // --- 核心 API 調用函數 ---
         async function getApiResponse(prompt, temperature) {
@@ -456,14 +484,6 @@
             }
         }
         
-        function extractAndStoreKeyword(question) {
-            const match = question.match(/^(?:為什麼|如何|你為什麼)(.+?)[？?]$/);
-            if (match && match[1]) {
-                const keyword = match[1].trim();
-                usedKeywords.add(keyword);
-            }
-        }
-
         // --- 獲取新問題 (AI模式) ---
         async function getNewQuestion(isRefresh = false) {
             UIManager.resetUI();
@@ -471,32 +491,38 @@
             isCustomMode = false;
             ui.refreshQuestionButton.classList.remove('hidden');
 
-            const selectedType = document.querySelector('.type-button.active').dataset.type;
-            let basePrompt, examplePrompt;
+            currentQuestionType = document.querySelector('.type-button.active').dataset.type;
+            loadUsedQuestions(); // (修訂) 每次都先從 localStorage 加載對應題型的歷史紀錄
 
-            if (selectedType === 'life') {
+            let basePrompt, examplePrompt;
+            if (currentQuestionType === 'life') {
                 basePrompt = "請用繁體中文為我生成一個簡短、個人化、關於日常偏好或經驗的闡釋思維訓練問題。";
                 examplePrompt = "例如：「你為什麼喜歡雨天？」、「你為什麼不喜歡吃苦瓜？」、「你為什麼偏愛獨自旅行？」。";
-            } else { // philosophy - (修訂) 更新指令與範例
+            } else {
                 basePrompt = "請用繁體中文為我生成一個簡短、生活化、但又能引發思考的問題。";
                 examplePrompt = "例如：「為什麼整理房間能讓心情變好？」、「為什麼我們會在意陌生人的看法？」、「為什麼我們會對舊物品產生感情？」。";
             }
             
             let prompt = `${basePrompt}問題必須以「為什麼」或「如何」開頭。問題長度必須嚴格限制在 15 個字以內。${examplePrompt}請只輸出問題本身，不要有任何多餘文字或引號。`;
             
-            if (usedKeywords.size > 0) {
-                const keywordsToAvoid = [...usedKeywords].join('、');
-                prompt += `\n\n為了避免重複，請不要生成與以下主題相關的問題：${keywordsToAvoid}。`;
+            // (修訂) 將已出現過的問題列表加入指令中，要求 AI 避免重複
+            if (usedQuestions.size > 0) {
+                const questionsToAvoid = [...usedQuestions].join('\n- ');
+                prompt += `\n\n請務必生成一個全新的問題。為了避免重複，絕對不要生成以下列表中的任何一個問題：\n- ${questionsToAvoid}`;
             }
-
-            // --- (修訂) 統一刷新邏輯 ---
-            // 為了確保 API 在刷新時能生成新題目（避免快取），在指令中加入一個獨特的提示。
+            
             if (isRefresh) {
-                prompt += `\n\n(請務必生成一個與上次完全不同的新問題)`;
+                prompt += `\n\n(這是一個刷新請求，請確保問題是新的)`;
             }
 
             const newQuestion = await getApiResponse(prompt, 0.95);
-            extractAndStoreKeyword(newQuestion);
+            
+            // (修訂) 將新生成的問題加入 Set 並儲存
+            if (!newQuestion.startsWith("抱歉")) {
+                usedQuestions.add(newQuestion);
+                saveUsedQuestions();
+            }
+
             UIManager.hideLoader(ui.questionLoader);
             
             ui.questionContainer.textContent = newQuestion;
@@ -600,7 +626,6 @@
         ui.submitButton.addEventListener('click', getFeedback);
         ui.nextQuestionButton.addEventListener('click', () => getNewQuestion(false));
         ui.modeToggleButton.addEventListener('click', toggleInputMode);
-        // 監聽刷新按鈕點擊，並標記為刷新操作 (isRefresh = true)
         ui.refreshQuestionButton.addEventListener('click', () => getNewQuestion(true));
 
         ui.typeButtons.forEach(button => {
@@ -608,8 +633,7 @@
                 if (!button.classList.contains('active')) {
                     ui.typeButtons.forEach(btn => btn.classList.remove('active'));
                     button.classList.add('active');
-                    usedKeywords.clear();
-                    // 切換類型時，視為獲取新問題 (isRefresh = false)
+                    // (修訂) 切換題型時，直接獲取新題即可。getNewQuestion 內部會處理不同題型的歷史紀錄。
                     getNewQuestion(false);
                 }
             });
