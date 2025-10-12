@@ -114,6 +114,10 @@
             gap: 0.75rem;
             margin-bottom: 2rem;
             margin-top: 1.5rem;
+            /* 修訂第一點：設定寬度為90%並置中 */
+            width: 90%;
+            margin-left: auto;
+            margin-right: auto;
         }
 
         #question-container {
@@ -453,7 +457,7 @@
             } else {
                 ui.questionTypeSelector.classList.remove('hidden');
                 ui.refreshQuestionButton.classList.remove('hidden'); // (修訂) 顯示刷新按鈕
-                getNewQuestion();
+                getNewQuestion(false);
             }
         }
         
@@ -466,7 +470,8 @@
         }
 
         // --- 獲取新問題 (AI模式) ---
-        async function getNewQuestion() {
+        // 修訂第三點：增加 isRefresh 參數
+        async function getNewQuestion(isRefresh = false) {
             UIManager.resetUI();
             UIManager.showLoader(ui.questionLoader);
             isCustomMode = false;
@@ -490,11 +495,14 @@
                 prompt += `\n\n為了避免重複，請不要生成與以下主題相關的問題：${keywordsToAvoid}。`;
             }
 
-            // --- 修訂開始 ---
-            // 為確保每次發送的指令不同，在指令結尾加上一個「。」符號。
-            // 這適用於「下一題」和「重新生成」等所有調用此函數的操作。
-            prompt += '。';
-            // --- 修訂結束 ---
+            // --- 修訂第三點：開始 ---
+            // 根據是否為「重新生成」以及問題類型，使用不同的符號來確保 API 指令不同。
+            if (isRefresh && selectedType === 'philosophy') {
+                prompt += '。。'; // 「哲學」題型重新生成時使用「。。」
+            } else {
+                prompt += '。'; // 「生活」題型重新生成，或所有題型的「下一題」時使用「。」
+            }
+            // --- 修訂第三點：結束 ---
 
             const newQuestion = await getApiResponse(prompt, 0.95);
             extractAndStoreKeyword(newQuestion);
@@ -597,11 +605,12 @@
             }
         }
 
-        // --- 事件監聽 ---
+        // --- 事件監聽 (修訂第三點) ---
         ui.submitButton.addEventListener('click', getFeedback);
-        ui.nextQuestionButton.addEventListener('click', getNewQuestion);
+        ui.nextQuestionButton.addEventListener('click', () => getNewQuestion(false));
         ui.modeToggleButton.addEventListener('click', toggleInputMode);
-        ui.refreshQuestionButton.addEventListener('click', getNewQuestion); // (修訂) 監聽刷新按鈕點擊
+        // 監聽刷新按鈕點擊，並標記為刷新操作 (isRefresh = true)
+        ui.refreshQuestionButton.addEventListener('click', () => getNewQuestion(true));
 
         ui.typeButtons.forEach(button => {
             button.addEventListener('click', () => {
@@ -609,13 +618,15 @@
                     ui.typeButtons.forEach(btn => btn.classList.remove('active'));
                     button.classList.add('active');
                     usedKeywords.clear();
-                    getNewQuestion();
+                    // 切換類型時，視為獲取新問題 (isRefresh = false)
+                    getNewQuestion(false);
                 }
             });
         });
 
-        // --- 頁面首次加載 ---
-        document.addEventListener('DOMContentLoaded', getNewQuestion);
+        // --- 頁面首次加載 (修訂第三點) ---
+        // 首次加載視為獲取新問題 (isRefresh = false)
+        document.addEventListener('DOMContentLoaded', () => getNewQuestion(false));
     </script>
 
 </body>
