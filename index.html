@@ -106,10 +106,18 @@
         }
 
         /* --- 核心元素 --- */
-        #question-container {
-            text-align: center;
+        /* (修訂) 問題容器與刷新按鈕的包裹器 */
+        #question-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
             margin-bottom: 2rem;
             margin-top: 1.5rem;
+        }
+
+        #question-container {
+            text-align: center;
             min-height: 50px;
             font-size: 1.35rem;
             font-weight: 600;
@@ -117,6 +125,7 @@
             transition: opacity 0.4s ease-in-out;
             padding: 0.5rem;
             border-radius: 4px;
+            flex-grow: 1; /* 佔據主要空間 */
         }
         
         #question-container[contenteditable="true"] {
@@ -125,6 +134,7 @@
             border: 1px solid var(--wabi-border);
             text-align: left;
             margin-top: 0;
+            margin-bottom: 0;
         }
         #question-container[contenteditable="true"]:focus {
             border-color: #b8b3a9;
@@ -134,6 +144,35 @@
             content: '在此輸入您的問題...';
             color: var(--wabi-text-secondary);
             pointer-events: none;
+        }
+
+        /* (修訂) 刷新按鈕樣式 */
+        #refresh-question-button {
+            background: none;
+            border: none;
+            padding: 0.5rem;
+            cursor: pointer;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s, transform 0.3s;
+            flex-shrink: 0;
+        }
+        #refresh-question-button:hover {
+            background-color: var(--wabi-bg);
+        }
+        #refresh-question-button:active {
+            transform: rotate(180deg);
+        }
+        #refresh-question-button svg {
+            width: 20px;
+            height: 20px;
+            stroke: var(--wabi-text-secondary);
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            fill: none;
         }
         
         #answer-container {
@@ -287,17 +326,27 @@
         </button>
 
         
-        <!-- (恢復) 題型選擇器 -->
         <div id="question-type-selector" class="type-selector">
             <button class="type-button active" data-type="life">生活</button>
             <button class="type-button" data-type="philosophy">哲學</button>
         </div>
+        
+        <!-- (修訂) 新增包裹器 -->
+        <div id="question-wrapper">
+            <div id="question-container" contenteditable="false"></div>
+            <!-- (修訂) 新增刷新按鈕 -->
+            <button id="refresh-question-button" title="重新生成題目">
+                <svg viewBox="0 0 24 24">
+                    <path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4"></path>
+                    <path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"></path>
+                </svg>
+            </button>
+        </div>
 
-        <div id="question-container" contenteditable="false"></div>
         <div class="loader" id="question-loader"></div>
 
         <div id="answer-container" class="hidden">
-            <textarea id="answer-textarea" placeholder="先用一句話總結，再解釋原因..."></textarea>
+            <textarea id="answer-textarea" placeholder="先用一句話直接回應題目，再逐步闡釋。"></textarea>
             <button id="submit-button" class="wabi-button">提交闡釋</button>
         </div>
         
@@ -330,11 +379,12 @@
             modeToggleButton: document.getElementById('mode-toggle-button'),
             questionTypeSelector: document.getElementById('question-type-selector'),
             typeButtons: document.querySelectorAll('.type-button'),
+            refreshQuestionButton: document.getElementById('refresh-question-button'), // (修訂) 新增刷新按鈕
         };
         
         // --- 狀態管理 ---
         let isCustomMode = false;
-        const usedKeywords = new Set(); // (修訂) 用於儲存已生成問題的關鍵詞
+        const usedKeywords = new Set();
 
         // --- 核心 API 調用函數 ---
         async function getApiResponse(prompt, temperature) {
@@ -394,6 +444,7 @@
 
             if (isCustomMode) {
                 ui.questionTypeSelector.classList.add('hidden');
+                ui.refreshQuestionButton.classList.add('hidden'); // (修訂) 隱藏刷新按鈕
                 ui.questionContainer.setAttribute('contenteditable', 'true');
                 ui.questionContainer.textContent = ''; 
                 ui.questionContainer.style.opacity = 1;
@@ -401,16 +452,15 @@
                 ui.questionContainer.focus();
             } else {
                 ui.questionTypeSelector.classList.remove('hidden');
+                ui.refreshQuestionButton.classList.remove('hidden'); // (修訂) 顯示刷新按鈕
                 getNewQuestion();
             }
         }
         
-        // (修訂) 新增函數：從問題中提取關鍵詞並儲存
         function extractAndStoreKeyword(question) {
-            // 嘗試從「為什麼你喜歡喝冰水？」中匹配「喝冰水」
             const match = question.match(/^(?:為什麼|如何|你為什麼)(.+?)[？?]$/);
             if (match && match[1]) {
-                const keyword = match[1].trim().replace(/^你(為什麼|如何)?/, '').trim(); // 移除句首的"你"
+                const keyword = match[1].trim();
                 usedKeywords.add(keyword);
             }
         }
@@ -420,6 +470,7 @@
             UIManager.resetUI();
             UIManager.showLoader(ui.questionLoader);
             isCustomMode = false;
+            ui.refreshQuestionButton.classList.remove('hidden'); // (修訂) 確保刷新按鈕可見
 
             const selectedType = document.querySelector('.type-button.active').dataset.type;
             let basePrompt, examplePrompt;
@@ -434,14 +485,15 @@
             
             let prompt = `${basePrompt}問題必須以「為什麼」或「如何」開頭。${examplePrompt}請只輸出問題本身，不要有任何多餘文字或引號。`;
             
-            // (修訂) 如果有歷史紀錄，將其加入 prompt 以避免重複
             if (usedKeywords.size > 0) {
                 const keywordsToAvoid = [...usedKeywords].join('、');
                 prompt += `\n\n為了避免重複，請不要生成與以下主題相關的問題：${keywordsToAvoid}。`;
             }
 
+            prompt += '。'; // (修訂) 為確保指令不同，在結尾加上符號
+
             const newQuestion = await getApiResponse(prompt, 0.95);
-            extractAndStoreKeyword(newQuestion); // (修訂) 儲存新問題的關鍵詞
+            extractAndStoreKeyword(newQuestion);
             UIManager.hideLoader(ui.questionLoader);
             
             ui.questionContainer.textContent = newQuestion;
@@ -545,20 +597,20 @@
         ui.submitButton.addEventListener('click', getFeedback);
         ui.nextQuestionButton.addEventListener('click', getNewQuestion);
         ui.modeToggleButton.addEventListener('click', toggleInputMode);
+        ui.refreshQuestionButton.addEventListener('click', getNewQuestion); // (修訂) 監聽刷新按鈕點擊
 
         ui.typeButtons.forEach(button => {
             button.addEventListener('click', () => {
                 if (!button.classList.contains('active')) {
                     ui.typeButtons.forEach(btn => btn.classList.remove('active'));
                     button.classList.add('active');
-                    usedKeywords.clear(); // (修訂) 切換題型時，清空歷史紀錄
+                    usedKeywords.clear();
                     getNewQuestion();
                 }
             });
         });
 
         // --- 頁面首次加載 ---
-        // (修訂) 確保一進入頁面就獲取一個新問題
         document.addEventListener('DOMContentLoaded', getNewQuestion);
     </script>
 
