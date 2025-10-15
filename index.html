@@ -27,10 +27,10 @@ background-color: var(--wabi-bg);
 color: var(--wabi-text-primary);
 display: flex;
 justify-content: center;
-align-items: flex-start; /* 改為 flex-start 以適應不同高度 */
+align-items: flex-start;
 min-height: 100%;
 margin: 0;
-padding: 2rem 1rem; /* 增加上下 padding */
+padding: 2rem 1rem;
 -webkit-font-smoothing: antialiased;
 }
 
@@ -38,7 +38,7 @@ padding: 2rem 1rem; /* 增加上下 padding */
 .container {
 position: relative;
 width: 100%;
-max-width: 620px; /* 稍微加寬以容納新內容 */
+max-width: 620px;
 min-height: 500px;
 padding: 2.5rem 3rem;
 background-color: var(--wabi-surface);
@@ -49,7 +49,7 @@ animation: fadeIn 0.5s ease-out forwards;
 }
 @keyframes fadeIn { to { opacity: 1; } }
 
-/* --- 主範疇選擇器 (新增) --- */
+/* --- 主範疇選擇器 --- */
 .tool-selector {
 display: flex;
 justify-content: center;
@@ -68,6 +68,7 @@ color: var(--wabi-text-secondary);
 cursor: pointer;
 position: relative;
 transition: color 0.3s ease;
+white-space: nowrap;
 }
 .tool-button:hover {
 color: var(--wabi-text-primary);
@@ -169,7 +170,7 @@ border-radius: 4px;
 flex-grow: 1;
 text-align: center;
 }
-/* 歸納題樣式 (修訂後) */
+/* 歸納題樣式 */
 .induction-statements {
     list-style: none;
     padding: 0;
@@ -229,6 +230,24 @@ font-weight: 700;
 color: var(--wabi-text-secondary);
 margin-right: 0.5rem;
 }
+/* 用詞題樣式 (修訂後) */
+.vocabulary-description {
+font-size: 1rem;
+line-height: 1.8;
+text-align: left;
+background-color: #faf9f7;
+padding: 1.5rem;
+border-radius: 6px;
+border: 1px solid var(--wabi-border);
+}
+.vocabulary-fill-in-blank {
+margin-top: 1.5rem;
+font-size: 1rem;
+text-align: left; /* 修訂為靠左 */
+color: var(--wabi-text-primary);
+font-family: var(--font-serif);
+}
+
 
 #question-container[contenteditable="true"] {
 outline: 2px solid transparent;
@@ -276,7 +295,7 @@ fill: none;
 #answer-textarea {
 text-align: left;
 width: 100%;
-min-height: 120px; /* 調整預設高度 */
+min-height: 120px;
 padding: 1rem;
 border: 1px solid var(--wabi-border);
 border-radius: 6px;
@@ -407,6 +426,13 @@ display: none;
 /* --- 可見性控制 --- */
 .hidden { display: none !important; }
 
+/* --- 響應式設計 --- */
+@media (max-width: 640px) {
+    body { padding: 1rem 0.5rem; }
+    .container { padding: 2rem 1.5rem; }
+    .tool-button { padding: 0.8rem 1rem; font-size: 1rem; }
+}
+
 </style>
 </head>
 <body>
@@ -414,9 +440,10 @@ display: none;
 <div class="container">
     
     <div class="tool-selector">
-        <button class="tool-button active" data-tool="elucidation">闡釋</button>
-        <button class="tool-button" data-tool="induction">歸納</button>
+        <button class="tool-button active" data-tool="induction">歸納</button>
         <button class="tool-button" data-tool="generalization">概括</button>
+        <button class="tool-button" data-tool="elucidation">闡釋</button>
+        <button class="tool-button" data-tool="vocabulary">用詞</button>
         <div class="tool-button-underline"></div>
     </div>
 
@@ -500,14 +527,15 @@ const ui = {
 };
 
 // --- 狀態管理 ---
-let currentTool = 'elucidation'; // 'elucidation', 'induction', 'generalization'
+let currentTool = 'induction'; // 'induction', 'generalization', 'elucidation', 'vocabulary'
 let isCustomMode = false;
-let currentQuestionData = {}; // 用於儲存當前問題的完整資訊 (例如歸納和概括的理想答案)
+let currentQuestionData = {};
 const usedQuestions = {
     elucidation_life: new Set(),
     elucidation_philosophy: new Set(),
     induction: new Set(),
-    generalization: new Set()
+    generalization: new Set(),
+    vocabulary: new Set()
 };
 
 // --- 本地儲存管理 ---
@@ -580,7 +608,7 @@ const UIManager = {
     resetUI: () => {
         ui.answerTextarea.value = '';
         ui.questionContainer.style.opacity = 0;
-        ui.questionContainer.innerHTML = ''; // 改為 innerHTML 以處理複雜結構
+        ui.questionContainer.innerHTML = '';
         ui.answerContainer.classList.add('hidden');
         ui.feedbackContainer.classList.remove('visible');
         ui.feedbackContainer.innerHTML = '';
@@ -592,21 +620,18 @@ const UIManager = {
         currentQuestionData = {};
     },
     updateToolUI: () => {
-        // 更新按鈕文字和 placeholder
         const toolConfig = {
             elucidation: { submit: '提交闡釋', placeholder: '先用一句話直接回應題目，再逐步闡釋。' },
             induction: { submit: '提交歸納', placeholder: '請歸納以上陳述的共通點。' },
-            generalization: { submit: '提交修訂', placeholder: '請修訂以上表現差劣的示例。' }
+            generalization: { submit: '提交修訂', placeholder: '請修訂以上表現差劣的示例。' },
+            vocabulary: { submit: '提交用詞', placeholder: '請用一個最適切的詞語形容以上描述。' }
         };
         ui.submitButton.textContent = toolConfig[currentTool].submit;
         ui.answerTextarea.placeholder = toolConfig[currentTool].placeholder;
 
-        // 控制「自訂模式」按鈕的可見性
         ui.modeToggleButton.classList.toggle('hidden', currentTool !== 'elucidation');
-        // 控制「題型選擇器」的可見性
         ui.questionTypeSelectorWrapper.classList.toggle('hidden', currentTool !== 'elucidation');
 
-        // 更新導航欄底線
         const activeButton = document.querySelector(`.tool-button[data-tool="${currentTool}"]`);
         if (activeButton) {
             ui.toolUnderline.style.width = `${activeButton.offsetWidth}px`;
@@ -620,7 +645,7 @@ function switchTool(newTool) {
     if (newTool === currentTool && !isCustomMode) return;
     
     currentTool = newTool;
-    isCustomMode = false; // 切換工具時總是退出自訂模式
+    isCustomMode = false;
 
     ui.toolButtons.forEach(btn => {
         btn.classList.toggle('active', btn.dataset.tool === newTool);
@@ -635,13 +660,13 @@ function getNewQuestion(isRefresh = false) {
     UIManager.resetUI();
     UIManager.showLoader(ui.questionLoader);
     
-    // 退出自訂模式的UI設定
     ui.refreshQuestionButton.classList.remove('hidden');
     
     const questionFetchers = {
         elucidation: getElucidationQuestion,
         induction: getInductionQuestion,
         generalization: getGeneralizationQuestion,
+        vocabulary: getVocabularyQuestion,
     };
     
     if (questionFetchers[currentTool]) {
@@ -772,6 +797,55 @@ async function getGeneralizationQuestion(isRefresh = false) {
     ui.answerContainer.classList.remove('hidden');
 }
 
+// --- 用詞 (Vocabulary) (修訂後) ---
+async function getVocabularyQuestion(isRefresh = false) {
+    loadUsedQuestions();
+    const currentUsedSet = usedQuestions.vocabulary;
+    let prompt = `請用繁體中文生成一個「用詞」思維訓練題目。你的輸出必須是一個 JSON 物件，格式如下：
+{
+  "description": "一段約 60字的描述，不能與科學相關，這段描述指向一個特定的中文詞語（名詞、動詞或形容詞），但描述中絕對不能出現答案詞語本身或其同義詞。",
+  "fill_in_sentence": "一句包含 '_________' 作為填充位置的句子，這句話能應用到答案詞語，不要超過18字。",
+  "answer": "一個最能精準概括以上描述的雙字中文詞語。"
+}
+- "description" 必須是客觀的場景或行為描述。
+- "fill_in_sentence" 必須自然地將答案詞語置入語境中，並使用 '_________' 作為填充底線。
+- "answer" 必須是一個常見但具體的詞語。
+- 重要：題目內容必須多元化，涵蓋不同情景與概念，請務必避免過於集中在心理、性格、感情等抽象主題。
+- 請直接輸出 JSON 物件，絕對不要有任何其他文字或代碼標記。`;
+
+    if (currentUsedSet.size > 0) {
+        const answersToAvoid = [...currentUsedSet].join('", "');
+        prompt += `\n\n為了避免重複，請確保生成的 "answer" 不要是以下任何一個：["${answersToAvoid}"]`;
+    }
+
+    const response = await getApiResponse(prompt, 0.9);
+
+    try {
+        const data = JSON.parse(response);
+        if (data.description && data.fill_in_sentence && data.answer) {
+            currentQuestionData = data;
+            currentUsedSet.add(data.answer);
+            saveUsedQuestions();
+
+            const formattedSentence = data.fill_in_sentence.replace(/X{5,}/g, '_________');
+
+            ui.questionContainer.innerHTML = `
+                <div class="vocabulary-description">${data.description}</div>
+                <div class="vocabulary-fill-in-blank">
+                    ${formattedSentence}
+                </div>
+            `;
+        } else { throw new Error('Invalid JSON structure'); }
+    } catch (e) {
+        console.error("Failed to parse vocabulary question:", e);
+        ui.questionContainer.textContent = "題目生成失敗，請重試。";
+    }
+
+    UIManager.hideLoader(ui.questionLoader);
+    ui.questionContainer.style.opacity = 1;
+    ui.answerContainer.classList.remove('hidden');
+}
+
 
 // --- 提交與回饋 (路由) ---
 async function getFeedback() {
@@ -830,6 +904,21 @@ async function getFeedback() {
 1. **分數**: 在最開頭，必須使用 "[SCORE: X]" 的格式給出一個 0 到 100 之間的分數。X 代表數字。假如用戶的修訂已算精準，加入了具體細節，則可打滿分，不要吹毛求疵。
 2. **評語**: 在分數換行後，直接用一兩句簡潔的話點評。絕對不要包含「評語」這個詞或任何標題。
 3. **分隔符與範例**: 在評語後換行輸出 "---"，然後提供一個優秀的修訂範例。`;
+        },
+        vocabulary: () => {
+            return `作為一個友善的詞彙教練，請用繁體中文評改以下回答。
+### 任務: 請用一個最適切的詞語形容以下描述。
+### 描述:
+"${currentQuestionData.description}"
+### 理想答案: 
+"${currentQuestionData.answer}"
+### 用戶的答案: 
+"${userAnswer}"
+### 你的評改:
+你的輸出必須嚴格遵守以下三部分的格式：
+1. **分數**: 在最開頭，必須使用 "[SCORE: X]" 的格式給出一個 0 到 100 之間的分數。X 代表數字。如果用戶答案與理想答案意思相近或完全正確，請給予 90-100 分。如果方向正確但不夠精準，給予 60-80 分。如果方向錯誤，給予低分。
+2. **評語**: 在分數換行後，直接用一兩句簡潔的話點評用戶的答案，解釋為什麼它貼切或不夠貼切。絕對不要包含「評語」這個詞或任何標題。
+3. **分隔符與範例**: 在評語後換行輸出 "---"，然後提供理想答案，並可選擇性地附上一句簡短的解釋。例如：「${currentQuestionData.answer}：這個詞精準地捕捉了...的精髓。」`;
         }
     };
 
@@ -890,7 +979,6 @@ function renderFeedback(feedbackText) {
     }
 
     if (finalHtml.trim() === '') {
-        // 如果解析完全失敗，顯示一個通用訊息或原始文本（選擇不顯示，以避免混亂）
         ui.feedbackContainer.innerHTML = `<div class="feedback-section"><p class="feedback-content">抱歉，回饋解析失敗，請稍後再試。</p></div>`;
     } else {
         ui.feedbackContainer.innerHTML = finalHtml;
@@ -920,7 +1008,6 @@ function toggleInputMode() {
         ui.answerContainer.classList.remove('hidden');
         ui.questionContainer.focus();
     } else {
-        // 返回 AI 模式時，重置為闡釋工具並獲取新問題
         currentTool = 'elucidation';
         ui.toolButtons.forEach(btn => btn.classList.remove('active'));
         document.querySelector('.tool-button[data-tool="elucidation"]').classList.add('active');
@@ -961,14 +1048,13 @@ ui.typeButtons.forEach(button => {
     });
 });
 
-// --- 頁面首次加載 (修訂後) ---
+// --- 頁面首次加載 ---
 document.addEventListener('DOMContentLoaded', () => {
-    // 初始化 UI 到默認工具並獲取第一個問題
-    const defaultTool = 'elucidation';
+    const defaultTool = 'induction';
     currentTool = defaultTool;
     document.querySelector(`.tool-button[data-tool="${defaultTool}"]`).classList.add('active');
     UIManager.updateToolUI();
-    getNewQuestion();
+
 });
 
 </script>
