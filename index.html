@@ -247,6 +247,10 @@ text-align: left; /* 修訂為靠左 */
 color: var(--wabi-text-primary);
 font-family: var(--font-serif);
 }
+    .fill-in-line {
+    display: inline-block;
+    white-space: nowrap;
+}
 
 
 #question-container[contenteditable="true"] {
@@ -835,7 +839,7 @@ async function getVocabularyQuestion(isRefresh = false) {
 - "description" 必須是客觀的場景或行為描述。
 - "fill_in_sentence" 必須自然地將答案詞語置入語境中，並使用 '_________' 作為填充底線。
 - "answer" 必須是一個常見但具體的詞語。
-- 重要：題目內容必須多元化，涵蓋不同情景與概念，請務必避免過於集中在心理、性格、感情等抽象主題。
+- 重要：題目內容必須多元化，涵蓋不同情景與概念，可用但避免過於集中在心理、性格、感情等抽象主題。
 - 請直接輸出 JSON 物件，絕對不要有任何其他文字或代碼標記。`;
 
     if (currentUsedSet.size > 0) {
@@ -852,7 +856,11 @@ async function getVocabularyQuestion(isRefresh = false) {
             currentUsedSet.add(data.answer);
             saveUsedQuestions();
 
-            const formattedSentence = data.fill_in_sentence.replace(/X{5,}/g, '_________');
+            // 將底線用帶有 class 的 span 包裹起來
+            const formattedSentence = data.fill_in_sentence.replace(
+                /_{5,}|X{5,}/g, 
+                '<span class="fill-in-line">_________</span>'
+            );
 
             ui.questionContainer.innerHTML = `
                 <div class="vocabulary-description">${data.description}</div>
