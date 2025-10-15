@@ -1,668 +1,977 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>闡釋思維訓練</title>
-    <style>
-        /* --- 侘寂風設計語言 V5 --- */
-        :root {
-            --wabi-bg: #f4f1ea;
-            --wabi-text-primary: #3c3a37;
-            --wabi-text-secondary: #8a857e;
-            --wabi-surface: #ffffff;
-            --wabi-border: #e4e1db;
-            --wabi-interactive: #edeae4;
-            --wabi-interactive-hover: #e0dcd4;
-            --font-serif: "Noto Serif TC", "Source Han Serif TC", serif;
-            --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>思維訓練工具</title>
+<style>
+/* --- 侘寂風設計語言 V6 --- */
+:root {
+--wabi-bg: #f4f1ea;
+--wabi-text-primary: #3c3a37;
+--wabi-text-secondary: #8a857e;
+--wabi-surface: #ffffff;
+--wabi-border: #e4e1db;
+--wabi-interactive: #edeae4;
+--wabi-interactive-hover: #e0dcd4;
+--font-serif: "Noto Serif TC", "Source Han Serif TC", serif;
+--font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
 
-        /* --- 基礎佈局 --- */
-        *, *::before, *::after { box-sizing: border-box; }
-        html { height: 100%; }
-        body {
-            font-family: var(--font-serif);
-            background-color: var(--wabi-bg);
-            color: var(--wabi-text-primary);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100%;
-            margin: 0;
-            padding: 1rem;
-            -webkit-font-smoothing: antialiased;
-        }
+/* --- 基礎佈局 --- */
+*, *::before, *::after { box-sizing: border-box; }
+html { height: 100%; }
+body {
+font-family: var(--font-serif);
+background-color: var(--wabi-bg);
+color: var(--wabi-text-primary);
+display: flex;
+justify-content: center;
+align-items: flex-start; /* 改為 flex-start 以適應不同高度 */
+min-height: 100%;
+margin: 0;
+padding: 2rem 1rem; /* 增加上下 padding */
+-webkit-font-smoothing: antialiased;
+}
 
-        /* --- 主容器 --- */
-        .container {
-            position: relative;
-            width: 100%;
-            max-width: 580px;
-            padding: 2.5rem 3rem;
-            background-color: var(--wabi-surface);
-            border: 1px solid var(--wabi-border);
-            border-radius: 8px;
-            opacity: 0;
-            animation: fadeIn 0.5s ease-out forwards;
-        }
-        @keyframes fadeIn { to { opacity: 1; } }
+/* --- 主容器 --- */
+.container {
+position: relative;
+width: 100%;
+max-width: 620px; /* 稍微加寬以容納新內容 */
+min-height: 500px;
+padding: 2.5rem 3rem;
+background-color: var(--wabi-surface);
+border: 1px solid var(--wabi-border);
+border-radius: 8px;
+opacity: 0;
+animation: fadeIn 0.5s ease-out forwards;
+}
+@keyframes fadeIn { to { opacity: 1; } }
 
-        /* --- 模式切換 SVG 按鈕 --- */
-        #mode-toggle-button {
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
-            background: none;
-            border: none;
-            padding: 0.5rem;
-            cursor: pointer;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background-color 0.2s;
-        }
-        #mode-toggle-button:hover {
-            background-color: var(--wabi-bg);
-        }
-        #mode-toggle-button svg {
-            width: 22px;
-            height: 22px;
-            stroke: var(--wabi-text-secondary);
-            stroke-width: 1.5;
-            stroke-linecap: round;
-            stroke-linejoin: round;
-            fill: none;
-        }
+/* --- 主範疇選擇器 (新增) --- */
+.tool-selector {
+display: flex;
+justify-content: center;
+margin-bottom: 2.5rem;
+border-bottom: 1px solid var(--wabi-border);
+position: relative;
+}
+.tool-button {
+background: none;
+border: none;
+padding: 1rem 1.5rem;
+font-family: var(--font-serif);
+font-size: 1.1rem;
+font-weight: 600;
+color: var(--wabi-text-secondary);
+cursor: pointer;
+position: relative;
+transition: color 0.3s ease;
+}
+.tool-button:hover {
+color: var(--wabi-text-primary);
+}
+.tool-button.active {
+color: var(--wabi-text-primary);
+}
+.tool-button-underline {
+position: absolute;
+bottom: -1px;
+height: 2px;
+background-color: var(--wabi-text-primary);
+transition: left 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), width 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
 
-        /* --- 題型選擇器 --- */
-        .type-selector {
-            display: flex;
-            justify-content: center;
-            gap: 0.75rem;
-            margin-bottom: 2rem;
-        }
-        .type-button {
-            background-color: transparent;
-            color: var(--wabi-text-secondary);
-            border: 1px solid var(--wabi-border);
-            padding: 0.5rem 1.25rem;
-            font-size: 0.85rem;
-            font-family: var(--font-sans);
-            font-weight: 600;
-            border-radius: 20px;
-            cursor: pointer;
-            transition: all 0.2s ease-in-out;
-        }
-        .type-button:hover {
-            background-color: var(--wabi-bg);
-            color: var(--wabi-text-primary);
-        }
-        .type-button.active {
-            background-color: var(--wabi-text-primary);
-            color: var(--wabi-surface);
-            border-color: var(--wabi-text-primary);
-        }
+/* --- 模式切換 SVG 按鈕 --- */
+#mode-toggle-button {
+position: absolute;
+top: 1rem;
+right: 1rem;
+background: none;
+border: none;
+padding: 0.5rem;
+cursor: pointer;
+border-radius: 50%;
+display: flex;
+align-items: center;
+justify-content: center;
+transition: background-color 0.2s, opacity 0.3s, visibility 0.3s;
+}
+#mode-toggle-button:hover {
+background-color: var(--wabi-bg);
+}
+#mode-toggle-button.hidden {
+opacity: 0;
+visibility: hidden;
+pointer-events: none;
+}
+#mode-toggle-button svg {
+width: 22px;
+height: 22px;
+stroke: var(--wabi-text-secondary);
+stroke-width: 1.5;
+stroke-linecap: round;
+stroke-linejoin: round;
+fill: none;
+}
 
-        /* --- 核心元素 --- */
-        #question-wrapper {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.75rem;
-            margin-bottom: 2rem;
-            margin-top: 1.5rem;
-            width: 90%;
-            margin-left: auto;
-            margin-right: auto;
-        }
+/* --- 題型選擇器 --- */
+.type-selector {
+display: flex;
+justify-content: center;
+gap: 0.75rem;
+margin-bottom: 2rem;
+}
+.type-button {
+background-color: transparent;
+color: var(--wabi-text-secondary);
+border: 1px solid var(--wabi-border);
+padding: 0.5rem 1.25rem;
+font-size: 0.85rem;
+font-family: var(--font-sans);
+font-weight: 600;
+border-radius: 20px;
+cursor: pointer;
+transition: all 0.2s ease-in-out;
+}
+.type-button:hover {
+background-color: var(--wabi-bg);
+color: var(--wabi-text-primary);
+}
+.type-button.active {
+background-color: var(--wabi-text-primary);
+color: var(--wabi-surface);
+border-color: var(--wabi-text-primary);
+}
 
-        #question-container {
-            text-align: center;
-            min-height: 50px;
-            font-size: 1.35rem;
-            font-weight: 600;
-            line-height: 1.6;
-            transition: opacity 0.4s ease-in-out;
-            padding: 0.5rem;
-            border-radius: 4px;
-            flex-grow: 1; 
-        }
-        
-        #question-container[contenteditable="true"] {
-            outline: 2px solid transparent;
-            background-color: #faf9f7;
-            border: 1px solid var(--wabi-border);
-            text-align: left;
-            margin-top: 0;
-            margin-bottom: 0;
-        }
-        #question-container[contenteditable="true"]:focus {
-            border-color: #b8b3a9;
-            box-shadow: 0 0 0 4px rgba(184, 179, 169, 0.15);
-        }
-        #question-container[contenteditable="true"]:empty:before {
-            content: '在此輸入您的問題...';
-            color: var(--wabi-text-secondary);
-            pointer-events: none;
-        }
+/* --- 核心元素 --- */
+#question-wrapper {
+display: flex;
+align-items: center;
+justify-content: center;
+gap: 0.75rem;
+margin-bottom: 2rem;
+margin-top: 1.5rem;
+width: 100%;
+margin-left: auto;
+margin-right: auto;
+}
 
-        #refresh-question-button {
-            background: none;
-            border: none;
-            padding: 0.5rem;
-            cursor: pointer;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background-color 0.2s, transform 0.3s;
-            flex-shrink: 0;
-        }
-        #refresh-question-button:hover {
-            background-color: var(--wabi-bg);
-        }
-        #refresh-question-button:active {
-            transform: rotate(180deg);
-        }
-        #refresh-question-button svg {
-            width: 20px;
-            height: 20px;
-            stroke: var(--wabi-text-secondary);
-            stroke-width: 2;
-            stroke-linecap: round;
-            stroke-linejoin: round;
-            fill: none;
-        }
-        
-        #answer-container {
-            text-align: center;
-        }
+#question-container {
+min-height: 50px;
+font-size: 1.35rem;
+font-weight: 600;
+line-height: 1.6;
+transition: opacity 0.4s ease-in-out;
+padding: 0.5rem;
+border-radius: 4px;
+flex-grow: 1;
+text-align: center;
+}
+/* 歸納題樣式 (修訂後) */
+.induction-statements {
+    list-style: none;
+    padding: 0;
+    margin: 1rem auto 0;
+    font-size: 1.1rem;
+    line-height: 1.8;
+    text-align: left;
+    counter-reset: statement-counter;
+}
+.induction-statements li {
+    counter-increment: statement-counter;
+    margin-bottom: 1.25rem;
+    padding-left: 2.75rem;
+    position: relative;
+}
+.induction-statements li:last-child {
+    margin-bottom: 0;
+}
+.induction-statements li::before {
+    content: counter(statement-counter);
+    position: absolute;
+    left: 0;
+    top: 2px;
+    width: 1.75rem;
+    height: 1.75rem;
+    line-height: 1.75rem;
+    text-align: center;
+    border-radius: 6px;
+    background-color: var(--wabi-interactive);
+    color: var(--wabi-text-secondary);
+    font-family: var(--font-sans);
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+/* 概括題樣式 */
+.generalization-passage {
+font-size: 1rem;
+line-height: 1.8;
+text-align: left;
+background-color: #faf9f7;
+padding: 1.5rem;
+border-radius: 6px;
+margin-bottom: 1.5rem;
+border: 1px solid var(--wabi-border);
+}
+.generalization-poor-summary {
+text-align: left;
+font-size: 0.95rem;
+padding: 1rem;
+background-color: var(--wabi-bg);
+border-radius: 6px;
+margin-bottom: 1.5rem;
+}
+.generalization-poor-summary strong {
+font-family: var(--font-sans);
+font-weight: 700;
+color: var(--wabi-text-secondary);
+margin-right: 0.5rem;
+}
 
-        #answer-textarea {
-            text-align: left;
-            width: 100%;
-            min-height: 150px;
-            padding: 1rem;
-            border: 1px solid var(--wabi-border);
-            border-radius: 6px;
-            background-color: #faf9f7;
-            color: var(--wabi-text-primary);
-            font-size: 1rem;
-            font-family: var(--font-serif);
-            line-height: 1.7;
-            resize: vertical;
-            margin-bottom: 1.5rem;
-            transition: border-color 0.3s, box-shadow 0.3s;
-        }
-        #answer-textarea::placeholder { color: var(--wabi-text-secondary); }
-        #answer-textarea:focus {
-            outline: none;
-            border-color: #b8b3a9;
-            box-shadow: 0 0 0 4px rgba(184, 179, 169, 0.15);
-        }
+#question-container[contenteditable="true"] {
+outline: 2px solid transparent;
+background-color: #faf9f7;
+border: 1px solid var(--wabi-border);
+text-align: left;
+margin-top: 0;
+margin-bottom: 0;
+}
+#question-container[contenteditable="true"]:focus {
+border-color: #b8b3a9;
+box-shadow: 0 0 0 4px rgba(184, 179, 169, 0.15);
+}
+#question-container[contenteditable="true"]:empty:before {
+content: '在此輸入您的問題...';
+color: var(--wabi-text-secondary);
+pointer-events: none;
+}
 
-        .wabi-button {
-            background-color: var(--wabi-interactive);
-            color: var(--wabi-text-primary);
-            border: 1px solid var(--wabi-border);
-            padding: 0.75rem 2rem;
-            font-size: 0.9rem;
-            font-family: var(--font-sans);
-            font-weight: 600;
-            letter-spacing: 0.5px;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: background-color 0.2s, transform 0.1s ease-out;
-        }
-        .wabi-button:hover { background-color: var(--wabi-interactive-hover); }
-        .wabi-button:active { transform: scale(0.98); }
-        .wabi-button:disabled { opacity: 0.7; cursor: not-allowed; }
+#refresh-question-button {
+background: none;
+border: none;
+padding: 0.5rem;
+cursor: pointer;
+border-radius: 50%;
+display: flex;
+align-items: center;
+justify-content: center;
+transition: background-color 0.2s, transform 0.3s;
+flex-shrink: 0;
+}
+#refresh-question-button:hover { background-color: var(--wabi-bg); }
+#refresh-question-button:active { transform: rotate(180deg); }
+#refresh-question-button svg {
+width: 20px;
+height: 20px;
+stroke: var(--wabi-text-secondary);
+stroke-width: 2;
+stroke-linecap: round;
+stroke-linejoin: round;
+fill: none;
+}
 
-        /* --- 反饋區塊 --- */
-        #feedback-container {
-            margin-top: 2.5rem;
-            text-align: left;
-            opacity: 0;
-            transform: translateY(10px);
-            transition: opacity 0.5s ease-out, transform 0.5s ease-out;
-        }
-        #feedback-container.visible { opacity: 1; transform: translateY(0); }
-        .feedback-section { margin-bottom: 2rem; }
-        .feedback-heading {
-            font-family: var(--font-sans);
-            font-size: 0.8rem;
-            font-weight: 700;
-            letter-spacing: 1px;
-            color: var(--wabi-text-secondary);
-            text-transform: uppercase;
-            margin-bottom: 0.75rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 1px solid var(--wabi-border);
-        }
-        .feedback-content {
-            font-size: 1rem;
-            line-height: 1.8;
-            white-space: pre-wrap;
-        }
-        .feedback-example-steps {
-            list-style: none;
-            padding-left: 0;
-            counter-reset: step-counter;
-        }
-        .feedback-example-steps li {
-            counter-increment: step-counter;
-            margin-bottom: 1rem;
-            padding-left: 2.5rem;
-            position: relative;
-            line-height: 1.7;
-        }
-        .feedback-example-steps li::before {
-            content: counter(step-counter);
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 1.5rem;
-            height: 1.5rem;
-            line-height: 1.5rem;
-            text-align: center;
-            border-radius: 50%;
-            background-color: var(--wabi-bg);
-            color: var(--wabi-text-secondary);
-            font-family: var(--font-sans);
-            font-size: 0.8rem;
-            font-weight: 700;
-        }
+#answer-container { text-align: center; }
+#answer-textarea {
+text-align: left;
+width: 100%;
+min-height: 120px; /* 調整預設高度 */
+padding: 1rem;
+border: 1px solid var(--wabi-border);
+border-radius: 6px;
+background-color: #faf9f7;
+color: var(--wabi-text-primary);
+font-size: 1rem;
+font-family: var(--font-serif);
+line-height: 1.7;
+resize: vertical;
+margin-bottom: 1.5rem;
+transition: border-color 0.3s, box-shadow 0.3s;
+}
+#answer-textarea::placeholder { color: var(--wabi-text-secondary); }
+#answer-textarea:focus {
+outline: none;
+border-color: #b8b3a9;
+box-shadow: 0 0 0 4px rgba(184, 179, 169, 0.15);
+}
 
-        .score-display-wrapper {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 1rem 0;
-        }
-        .feedback-score-circle {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            background-color: var(--wabi-bg);
-            border: 1px solid var(--wabi-border);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-family: var(--font-sans);
-            font-size: 3rem;
-            font-weight: 300;
-            color: var(--wabi-text-primary);
-        }
+.wabi-button {
+background-color: var(--wabi-interactive);
+color: var(--wabi-text-primary);
+border: 1px solid var(--wabi-border);
+padding: 0.75rem 2rem;
+font-size: 0.9rem;
+font-family: var(--font-sans);
+font-weight: 600;
+letter-spacing: 0.5px;
+border-radius: 6px;
+cursor: pointer;
+transition: background-color 0.2s, transform 0.1s ease-out;
+}
+.wabi-button:hover { background-color: var(--wabi-interactive-hover); }
+.wabi-button:active { transform: scale(0.98); }
+.wabi-button:disabled { opacity: 0.7; cursor: not-allowed; }
 
-        /* --- 加載動畫 --- */
-        .loader {
-            height: 3px;
-            width: 100px;
-            background: linear-gradient(90deg, transparent, var(--wabi-text-secondary), transparent);
-            background-size: 150% 100%;
-            animation: loading-bar 1.8s ease-in-out infinite;
-            margin: 2rem auto;
-            border-radius: 3px;
-            display: none;
-        }
-        @keyframes loading-bar {
-            0% { background-position: 150% 0; }
-            100% { background-position: -150% 0; }
-        }
+/* --- 反饋區塊 --- */
+#feedback-container {
+margin-top: 2.5rem;
+text-align: left;
+opacity: 0;
+transform: translateY(10px);
+transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+}
+#feedback-container.visible { opacity: 1; transform: translateY(0); }
+.feedback-section { margin-bottom: 2rem; }
+.feedback-heading {
+font-family: var(--font-sans);
+font-size: 0.8rem;
+font-weight: 700;
+letter-spacing: 1px;
+color: var(--wabi-text-secondary);
+text-transform: uppercase;
+margin-bottom: 0.75rem;
+padding-bottom: 0.5rem;
+border-bottom: 1px solid var(--wabi-border);
+}
+.feedback-content {
+font-size: 1rem;
+line-height: 1.8;
+white-space: pre-wrap;
+}
+.feedback-example-steps {
+list-style: none;
+padding-left: 0;
+counter-reset: step-counter;
+}
+.feedback-example-steps li {
+counter-increment: step-counter;
+margin-bottom: 1rem;
+padding-left: 2.5rem;
+position: relative;
+line-height: 1.7;
+}
+.feedback-example-steps li::before {
+content: counter(step-counter);
+position: absolute;
+left: 0;
+top: 0;
+width: 1.5rem;
+height: 1.5rem;
+line-height: 1.5rem;
+text-align: center;
+border-radius: 50%;
+background-color: var(--wabi-bg);
+color: var(--wabi-text-secondary);
+font-family: var(--font-sans);
+font-size: 0.8rem;
+font-weight: 700;
+}
+.score-display-wrapper {
+display: flex;
+justify-content: center;
+align-items: center;
+padding: 1rem 0;
+}
+.feedback-score-circle {
+width: 120px;
+height: 120px;
+border-radius: 50%;
+background-color: var(--wabi-bg);
+border: 1px solid var(--wabi-border);
+display: flex;
+justify-content: center;
+align-items: center;
+font-family: var(--font-sans);
+font-size: 3rem;
+font-weight: 300;
+color: var(--wabi-text-primary);
+}
 
-        /* --- 可見性控制 --- */
-        .hidden { display: none !important; }
-    </style>
+/* --- 加載動畫 --- */
+.loader {
+height: 3px;
+width: 100px;
+background: linear-gradient(90deg, transparent, var(--wabi-text-secondary), transparent);
+background-size: 150% 100%;
+animation: loading-bar 1.8s ease-in-out infinite;
+margin: 2rem auto;
+border-radius: 3px;
+display: none;
+}
+@keyframes loading-bar {
+0% { background-position: 150% 0; }
+100% { background-position: -150% 0; }
+}
+
+/* --- 可見性控制 --- */
+.hidden { display: none !important; }
+
+</style>
 </head>
 <body>
 
-    <div class="container">
-        <button id="mode-toggle-button" title="切換 AI 擬題 / 自訂題目">
-            <svg viewBox="0 0 24 24">
-                 <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4"></path>
-                 <path d="M13.5 6.5l4 4"></path>
-            </svg>
-        </button>
+<div class="container">
+    
+    <div class="tool-selector">
+        <button class="tool-button active" data-tool="elucidation">闡釋</button>
+        <button class="tool-button" data-tool="induction">歸納</button>
+        <button class="tool-button" data-tool="generalization">概括</button>
+        <div class="tool-button-underline"></div>
+    </div>
 
+    <button id="mode-toggle-button" title="切換 AI 擬題 / 自訂題目">
+        <svg viewBox="0 0 24 24">
+            <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4"></path>
+            <path d="M13.5 6.5l4 4"></path>
+        </svg>
+    </button>
+    
+    <div id="tool-content">
+        <!-- 內容會由 JS 動態填入 -->
+    </div>
+
+    <div id="question-type-selector-wrapper">
         <div id="question-type-selector" class="type-selector">
             <button class="type-button active" data-type="life">生活</button>
             <button class="type-button" data-type="philosophy">哲學</button>
         </div>
-        
-        <div id="question-wrapper">
-            <div id="question-container" contenteditable="false"></div>
-            <button id="refresh-question-button" title="重新生成題目">
-                <svg viewBox="0 0 24 24">
-                    <path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4"></path>
-                    <path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"></path>
-                </svg>
-            </button>
-        </div>
-
-        <div class="loader" id="question-loader"></div>
-
-        <div id="answer-container" class="hidden">
-            <textarea id="answer-textarea" placeholder="先用一句話直接回應題目，再逐步闡釋。"></textarea>
-            <button id="submit-button" class="wabi-button">提交闡釋</button>
-        </div>
-        
-        <div class="loader" id="feedback-loader"></div>
-        <div id="feedback-container"></div>
-
-        <div id="next-question-wrapper" class="hidden" style="text-align: center;">
-            <button id="next-question-button" class="wabi-button">下一題</button>
-        </div>
-        
-        <!-- (修訂) 新增自訂模式下的重置按鈕容器 -->
-        <div id="new-custom-question-wrapper" class="hidden" style="text-align: center;">
-            <button id="new-custom-question-button" class="wabi-button">自訂新題目</button>
-        </div>
+    </div>
+    
+    <div id="question-wrapper">
+        <div id="question-container" contenteditable="false"></div>
+        <button id="refresh-question-button" title="重新生成題目">
+            <svg viewBox="0 0 24 24">
+                <path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4"></path>
+                <path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"></path>
+            </svg>
+        </button>
+    </div>
+    
+    <div class="loader" id="question-loader"></div>
+    
+    <div id="answer-container" class="hidden">
+        <textarea id="answer-textarea" placeholder="..."></textarea>
+        <button id="submit-button" class="wabi-button">提交</button>
+    </div>
+    
+    <div class="loader" id="feedback-loader"></div>
+    <div id="feedback-container"></div>
+    
+    <div id="next-question-wrapper" class="hidden" style="text-align: center;">
+        <button id="next-question-button" class="wabi-button">下一題</button>
+    </div>
+    
+    <div id="new-custom-question-wrapper" class="hidden" style="text-align: center;">
+        <button id="new-custom-question-button" class="wabi-button">自訂新題目</button>
     </div>
 
-    <script>
-        // --- API 配置 ---
-        const API_KEYS = ["sk-p-9-aIT4kSvvL_l4HEAReA"];
-        let currentApiKeyIndex = 0;
-        const API_URL_BASE = "https://chatapi.akash.network/api/v1/chat/completions";
-        const MODEL = "Qwen3-235B-A22B-Instruct-2507-FP8";
+</div>
 
-        // --- DOM 元素獲取 ---
-        const ui = {
-            questionContainer: document.getElementById('question-container'),
-            answerContainer: document.getElementById('answer-container'),
-            answerTextarea: document.getElementById('answer-textarea'),
-            submitButton: document.getElementById('submit-button'),
-            feedbackContainer: document.getElementById('feedback-container'),
-            nextQuestionWrapper: document.getElementById('next-question-wrapper'),
-            nextQuestionButton: document.getElementById('next-question-button'),
-            questionLoader: document.getElementById('question-loader'),
-            feedbackLoader: document.getElementById('feedback-loader'),
-            modeToggleButton: document.getElementById('mode-toggle-button'),
-            questionTypeSelector: document.getElementById('question-type-selector'),
-            typeButtons: document.querySelectorAll('.type-button'),
-            refreshQuestionButton: document.getElementById('refresh-question-button'),
-            // (修訂) 新增對應的 DOM 元素
-            newCustomQuestionWrapper: document.getElementById('new-custom-question-wrapper'),
-            newCustomQuestionButton: document.getElementById('new-custom-question-button'),
-        };
-        
-        // --- 狀態管理 ---
-        let isCustomMode = false;
-        const STORAGE_KEY_PREFIX = 'clarifyThinkingUsedQuestions_';
-        let currentQuestionType = 'life';
-        let usedQuestions = new Set();
+<script>
+// --- API 配置 ---
+const API_KEYS = ["sk-p-9-aIT4kSvvL_l4HEAReA"];
+let currentApiKeyIndex = 0;
+const API_URL_BASE = "https://chatapi.akash.network/api/v1/chat/completions";
+const MODEL = "Qwen3-235B-A22B-Instruct-2507-FP8";
 
-        // --- 本地儲存管理 ---
-        function getStorageKey() {
-            return STORAGE_KEY_PREFIX + currentQuestionType;
+// --- DOM 元素獲取 ---
+const ui = {
+    container: document.querySelector('.container'),
+    toolSelector: document.querySelector('.tool-selector'),
+    toolButtons: document.querySelectorAll('.tool-button'),
+    toolUnderline: document.querySelector('.tool-button-underline'),
+    questionContainer: document.getElementById('question-container'),
+    answerContainer: document.getElementById('answer-container'),
+    answerTextarea: document.getElementById('answer-textarea'),
+    submitButton: document.getElementById('submit-button'),
+    feedbackContainer: document.getElementById('feedback-container'),
+    nextQuestionWrapper: document.getElementById('next-question-wrapper'),
+    nextQuestionButton: document.getElementById('next-question-button'),
+    questionLoader: document.getElementById('question-loader'),
+    feedbackLoader: document.getElementById('feedback-loader'),
+    modeToggleButton: document.getElementById('mode-toggle-button'),
+    questionTypeSelectorWrapper: document.getElementById('question-type-selector-wrapper'),
+    questionTypeSelector: document.getElementById('question-type-selector'),
+    typeButtons: document.querySelectorAll('.type-button'),
+    refreshQuestionButton: document.getElementById('refresh-question-button'),
+    newCustomQuestionWrapper: document.getElementById('new-custom-question-wrapper'),
+    newCustomQuestionButton: document.getElementById('new-custom-question-button'),
+};
+
+// --- 狀態管理 ---
+let currentTool = 'elucidation'; // 'elucidation', 'induction', 'generalization'
+let isCustomMode = false;
+let currentQuestionData = {}; // 用於儲存當前問題的完整資訊 (例如歸納和概括的理想答案)
+const usedQuestions = {
+    elucidation_life: new Set(),
+    elucidation_philosophy: new Set(),
+    induction: new Set(),
+    generalization: new Set()
+};
+
+// --- 本地儲存管理 ---
+function getStorageKey() {
+    if (currentTool === 'elucidation') {
+        const type = document.querySelector('.type-button.active').dataset.type;
+        return `usedQuestions_${currentTool}_${type}`;
+    }
+    return `usedQuestions_${currentTool}`;
+}
+
+function saveUsedQuestions() {
+    try {
+        const key = getStorageKey();
+        const questionSet = usedQuestions[key.replace('usedQuestions_', '')];
+        if (questionSet) {
+            localStorage.setItem(key, JSON.stringify([...questionSet]));
         }
+    } catch (e) {
+        console.error("無法儲存問題至 localStorage:", e);
+    }
+}
 
-        function saveUsedQuestions() {
-            try {
-                localStorage.setItem(getStorageKey(), JSON.stringify([...usedQuestions]));
-            } catch (e) {
-                console.error("無法儲存問題至 localStorage:", e);
-            }
+function loadUsedQuestions() {
+    try {
+        const key = getStorageKey();
+        const storedQuestions = localStorage.getItem(key);
+        const questionSetKey = key.replace('usedQuestions_', '');
+        if (storedQuestions) {
+            usedQuestions[questionSetKey] = new Set(JSON.parse(storedQuestions));
+        } else {
+            usedQuestions[questionSetKey] = new Set();
         }
+    } catch (e) {
+        console.error("無法從 localStorage 讀取問題:", e);
+    }
+}
 
-        function loadUsedQuestions() {
-            try {
-                const storedQuestions = localStorage.getItem(getStorageKey());
-                if (storedQuestions) {
-                    usedQuestions = new Set(JSON.parse(storedQuestions));
-                } else {
-                    usedQuestions = new Set();
-                }
-            } catch (e) {
-                console.error("無法從 localStorage 讀取問題:", e);
-                usedQuestions = new Set();
-            }
-        }
-
-        // --- 核心 API 調用函數 ---
-        async function getApiResponse(prompt, temperature) {
-            try {
-                const cacheBuster = `t=${new Date().getTime()}&r=${Math.random().toString(36).substring(7)}`;
-                const uniqueUrl = `${API_URL_BASE}?${cacheBuster}`;
-
-                const response = await fetch(uniqueUrl, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${API_KEYS[currentApiKeyIndex]}`
-                    },
-                    body: JSON.stringify({
-                        model: MODEL,
-                        messages: [{ role: "system", content: "You are a helpful assistant." }, { role: "user", content: prompt }],
-                        max_tokens: 600,
-                        temperature: temperature
-                    })
-                });
-
-                if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
-                const data = await response.json();
-                if (data.choices && data.choices[0] && data.choices[0].message) {
-                    return data.choices[0].message.content.trim();
-                } else {
-                    throw new Error('Invalid API response format');
-                }
-            } catch (error) {
-                console.error("API Request Failed:", error);
-                return "抱歉，連線好像有點問題，請稍後再試。";
-            }
-        }
-
-        // --- UI 控制 ---
-        const UIManager = {
-            showLoader: (loader) => { loader.style.display = 'block'; },
-            hideLoader: (loader) => { loader.style.display = 'none'; },
-            resetUI: () => {
-                ui.answerTextarea.value = '';
-                ui.questionContainer.style.opacity = 0;
-                ui.answerContainer.classList.add('hidden');
-                ui.feedbackContainer.classList.remove('visible');
-                ui.feedbackContainer.innerHTML = '';
-                ui.nextQuestionWrapper.classList.add('hidden');
-                ui.newCustomQuestionWrapper.classList.add('hidden'); // (修訂) 確保重置時也隱藏此按鈕
-                ui.submitButton.disabled = false;
-                ui.answerTextarea.disabled = false;
-                ui.questionContainer.removeAttribute('contenteditable');
-                ui.questionContainer.textContent = '';
-            }
-        };
-
-        // --- 模式切換 ---
-        function toggleInputMode() {
-            isCustomMode = !isCustomMode;
-            UIManager.resetUI();
-
-            if (isCustomMode) {
-                ui.questionTypeSelector.classList.add('hidden');
-                ui.refreshQuestionButton.classList.add('hidden');
-                ui.questionContainer.setAttribute('contenteditable', 'true');
-                ui.questionContainer.textContent = ''; 
-                ui.questionContainer.style.opacity = 1;
-                ui.answerContainer.classList.remove('hidden');
-                ui.questionContainer.focus();
-            } else {
-                ui.questionTypeSelector.classList.remove('hidden');
-                ui.refreshQuestionButton.classList.remove('hidden');
-                getNewQuestion(false);
-            }
-        }
-        
-        // --- 獲取新問題 (AI模式) ---
-        async function getNewQuestion(isRefresh = false) {
-            UIManager.resetUI();
-            UIManager.showLoader(ui.questionLoader);
-            isCustomMode = false;
-            ui.refreshQuestionButton.classList.remove('hidden');
-
-            currentQuestionType = document.querySelector('.type-button.active').dataset.type;
-            loadUsedQuestions();
-
-            let basePrompt, examplePrompt;
-            if (currentQuestionType === 'life') {
-                basePrompt = "請用繁體中文為我生成一個簡短、個人化、關於日常偏好或經驗的闡釋思維訓練問題。";
-                examplePrompt = "例如：「你為什麼喜歡雨天？」、「你為什麼不喜歡吃苦瓜？」、「你為什麼偏愛獨自旅行？」。";
-            } else {
-                basePrompt = "請用繁體中文為我生成一個簡短、生活化、但又能引發思考的問題。";
-                examplePrompt = "例如：「為什麼整理房間能讓心情變好？」、「為什麼我們會在意陌生人的看法？」、「為什麼我們會對舊物品產生感情？」。";
-            }
-            
-            let prompt = `${basePrompt}問題必須以「為什麼」或「如何」開頭。問題長度必須嚴格限制在 15 個字以內。${examplePrompt}請只輸出問題本身，不要有任何多餘文字或引號。`;
-            
-            if (usedQuestions.size > 0) {
-                const questionsToAvoid = [...usedQuestions].join('\n- ');
-                prompt += `\n\n請務必生成一個全新的問題。為了避免重複，絕對不要生成以下列表中的任何一個問題：\n- ${questionsToAvoid}`;
-            }
-            
-            if (isRefresh) {
-                prompt += `\n\n(這是一個刷新請求，請確保問題是新的)`;
-            }
-
-            const newQuestion = await getApiResponse(prompt, 0.95);
-            
-            if (!newQuestion.startsWith("抱歉")) {
-                usedQuestions.add(newQuestion);
-                saveUsedQuestions();
-            }
-
-            UIManager.hideLoader(ui.questionLoader);
-            
-            ui.questionContainer.textContent = newQuestion;
-            ui.questionContainer.style.opacity = 1;
-            ui.answerContainer.classList.remove('hidden');
-        }
-
-        // --- 提交答案並獲取反饋 ---
-        async function getFeedback() {
-            const userAnswer = ui.answerTextarea.value.trim();
-            const currentQuestion = ui.questionContainer.textContent.trim();
-
-            if (!userAnswer) {
-                alert("請先闡釋您的觀點。");
-                return;
-            }
-            if (!currentQuestion) {
-                alert("請先設定一個有效的問題。");
-                return;
-            }
-
-            ui.submitButton.disabled = true;
-            ui.answerTextarea.disabled = true;
-            UIManager.showLoader(ui.feedbackLoader);
-            
-            const prompt = `
-                作為一個嚴格但友善的思維闡釋教練，請用繁體中文針對以下回答提供回饋和評分。
-
-                ### 問題:
-                「${currentQuestion}」
-
-                ### 用戶回答:
-                「${userAnswer}」
-
-                ### 你的任務:
-                你的輸出必須嚴格遵守以下三部分的格式，絕對不能偏離。
-
-                1.  **分數 (Score)**: 在最開頭，必須使用 "[SCORE: X]" 的格式給出一個 0 到 100 之間的分數。X 代表數字。評分標準：回答是否直接、核心原因是否清晰、後續解釋的邏輯鏈是否緊密。若要得70分或以上，在邏輯鏈中必須最少有多於一個的步驟。
-                2.  **評語 (Critique)**: 在分數換行後，用一兩句簡潔的話，直接點出回答中的核心問題。語氣要像朋友給建議一樣。絕對不能包含 "評語" 這個詞。
-                3.  **分隔符與範例 (Separator & Example)**: 在評語結束後，立刻換行並輸出 "---" (三個減號)，然後再換行提供一個邏輯嚴謹的闡釋範例。範例的每一步驟只佔一行，且必須是層層遞進的因果關係。請不要用「大腦」等字眼，不要從過於科學的角度推論。
-
-                ### 絕對嚴格的輸出格式範例:
-                [SCORE: 75]
-                你的解釋很不錯，但如果能先把最重要的原因說出來，整個思路會更清楚。
-                ---
-                我喜歡喝冰水，因為它能讓我瞬間感到清爽提神。
-                冰冷的溫度一接觸到口腔和喉嚨，就給神經帶來了強烈的刺激。
-                這種刺激感能快速蓋過身體的疲勞或腦袋的昏沉感。
-                因此，對我來說，喝冰水就像一個能快速重啟精神的開關。
-            `;
-
-            const feedbackText = await getApiResponse(prompt, 0.6);
-            UIManager.hideLoader(ui.feedbackLoader);
-            
-            const scoreMatch = feedbackText.match(/\[SCORE:\s*(\d+)\s*\]/);
-            const score = scoreMatch ? scoreMatch[1] : 'N/A';
-
-            const feedbackWithoutScore = feedbackText.replace(/\[SCORE:\s*(\d+)\s*\]\n?/, '').trim();
-            const parts = feedbackWithoutScore.split('---');
-            const critique = parts[0]?.trim();
-            const exampleRaw = parts[1]?.trim();
-            
-            if (critique && exampleRaw && score !== 'N/A') {
-                const exampleSteps = exampleRaw.split('\n').map(step => step.trim()).filter(step => step);
-                let exampleHtml = '<ol class="feedback-example-steps">';
-                exampleSteps.forEach(step => {
-                    const cleanStep = step.replace(/^\d+\.\s*/, '');
-                    exampleHtml += `<li>${cleanStep}</li>`;
-                });
-                exampleHtml += '</ol>';
-
-                ui.feedbackContainer.innerHTML = `
-                    <div class="feedback-section">
-                        <h2 class="feedback-heading">分數</h2>
-                        <div class="score-display-wrapper">
-                            <div class="feedback-score-circle">
-                                <span>${score}</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="feedback-section">
-                        <h2 class="feedback-heading">評語</h2>
-                        <p class="feedback-content">${critique}</p>
-                    </div>
-                    <div class="feedback-section">
-                        <h2 class="feedback-heading">範例</h2>
-                        ${exampleHtml}
-                    </div>
-                `;
-            } else {
-                 ui.feedbackContainer.innerHTML = `<div class="feedback-section"><p class="feedback-content">${feedbackText}</p></div>`;
-            }
-
-            ui.feedbackContainer.classList.add('visible');
-            
-            // (修訂) 根據當前模式決定顯示哪個後續按鈕
-            if (isCustomMode) {
-                ui.newCustomQuestionWrapper.classList.remove('hidden');
-            } else {
-                ui.nextQuestionWrapper.classList.remove('hidden');
-            }
-        }
-        
-        // (修訂) 新增一個函數來重置自訂模式的介面
-        function startNewCustomQuestion() {
-            UIManager.resetUI(); // 先執行完整的清理
-            // 重新設定自訂模式需要的介面
-            ui.questionContainer.setAttribute('contenteditable', 'true');
-            ui.questionContainer.style.opacity = 1;
-            ui.answerContainer.classList.remove('hidden');
-            ui.questionContainer.focus(); // 將焦點設回問題輸入框
-        }
-
-        // --- 事件監聽 ---
-        ui.submitButton.addEventListener('click', getFeedback);
-        ui.nextQuestionButton.addEventListener('click', () => getNewQuestion(false));
-        ui.modeToggleButton.addEventListener('click', toggleInputMode);
-        ui.refreshQuestionButton.addEventListener('click', () => getNewQuestion(true));
-        ui.newCustomQuestionButton.addEventListener('click', startNewCustomQuestion); // (修訂) 綁定新按鈕的事件
-
-        ui.typeButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                if (!button.classList.contains('active')) {
-                    ui.typeButtons.forEach(btn => btn.classList.remove('active'));
-                    button.classList.add('active');
-                    getNewQuestion(false);
-                }
-            });
+// --- 核心 API 調用函數 ---
+async function getApiResponse(prompt, temperature) {
+    try {
+        const response = await fetch(API_URL_BASE, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${API_KEYS[currentApiKeyIndex]}` },
+            body: JSON.stringify({
+                model: MODEL,
+                messages: [{ role: "system", content: "You are a helpful assistant that always responds in Traditional Chinese." }, { role: "user", content: prompt }],
+                max_tokens: 800,
+                temperature: temperature
+            })
         });
 
-        // --- 頁面首次加載 ---
-        document.addEventListener('DOMContentLoaded', () => getNewQuestion(false));
-    </script>
+        if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+        const data = await response.json();
+        if (data.choices && data.choices[0] && data.choices[0].message) {
+            return data.choices[0].message.content.trim();
+        } else {
+            throw new Error('Invalid API response format');
+        }
+    } catch (error) {
+        console.error("API Request Failed:", error);
+        return "抱歉，連線好像有點問題，請稍後再試。";
+    }
+}
+
+// --- UI 控制 ---
+const UIManager = {
+    showLoader: (loader) => { loader.style.display = 'block'; },
+    hideLoader: (loader) => { loader.style.display = 'none'; },
+    resetUI: () => {
+        ui.answerTextarea.value = '';
+        ui.questionContainer.style.opacity = 0;
+        ui.questionContainer.innerHTML = ''; // 改為 innerHTML 以處理複雜結構
+        ui.answerContainer.classList.add('hidden');
+        ui.feedbackContainer.classList.remove('visible');
+        ui.feedbackContainer.innerHTML = '';
+        ui.nextQuestionWrapper.classList.add('hidden');
+        ui.newCustomQuestionWrapper.classList.add('hidden');
+        ui.submitButton.disabled = false;
+        ui.answerTextarea.disabled = false;
+        ui.questionContainer.removeAttribute('contenteditable');
+        currentQuestionData = {};
+    },
+    updateToolUI: () => {
+        // 更新按鈕文字和 placeholder
+        const toolConfig = {
+            elucidation: { submit: '提交闡釋', placeholder: '先用一句話直接回應題目，再逐步闡釋。' },
+            induction: { submit: '提交歸納', placeholder: '請歸納以上陳述的共通點。' },
+            generalization: { submit: '提交修訂', placeholder: '請修訂以上表現差劣的示例。' }
+        };
+        ui.submitButton.textContent = toolConfig[currentTool].submit;
+        ui.answerTextarea.placeholder = toolConfig[currentTool].placeholder;
+
+        // 控制「自訂模式」按鈕的可見性
+        ui.modeToggleButton.classList.toggle('hidden', currentTool !== 'elucidation');
+        // 控制「題型選擇器」的可見性
+        ui.questionTypeSelectorWrapper.classList.toggle('hidden', currentTool !== 'elucidation');
+
+        // 更新導航欄底線
+        const activeButton = document.querySelector(`.tool-button[data-tool="${currentTool}"]`);
+        if (activeButton) {
+            ui.toolUnderline.style.width = `${activeButton.offsetWidth}px`;
+            ui.toolUnderline.style.left = `${activeButton.offsetLeft}px`;
+        }
+    }
+};
+
+// --- 主工具切換邏輯 ---
+function switchTool(newTool) {
+    if (newTool === currentTool && !isCustomMode) return;
+    
+    currentTool = newTool;
+    isCustomMode = false; // 切換工具時總是退出自訂模式
+
+    ui.toolButtons.forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.tool === newTool);
+    });
+    
+    UIManager.updateToolUI();
+    getNewQuestion();
+}
+
+// --- 題目生成邏輯 (路由) ---
+function getNewQuestion(isRefresh = false) {
+    UIManager.resetUI();
+    UIManager.showLoader(ui.questionLoader);
+    
+    // 退出自訂模式的UI設定
+    ui.refreshQuestionButton.classList.remove('hidden');
+    
+    const questionFetchers = {
+        elucidation: getElucidationQuestion,
+        induction: getInductionQuestion,
+        generalization: getGeneralizationQuestion,
+    };
+    
+    if (questionFetchers[currentTool]) {
+        questionFetchers[currentTool](isRefresh);
+    }
+}
+
+// --- 闡釋 (Elucidation) ---
+async function getElucidationQuestion(isRefresh = false) {
+    const type = document.querySelector('.type-button.active').dataset.type;
+    loadUsedQuestions();
+    const currentUsedSet = usedQuestions[`elucidation_${type}`];
+
+    let basePrompt, examplePrompt;
+    if (type === 'life') {
+        basePrompt = "請用繁體中文為我生成一個簡短、個人化、關於日常偏好或經驗的闡釋思維訓練問題。";
+        examplePrompt = "例如：「你為什麼喜歡雨天？」、「你為什麼不喜歡吃苦瓜？」、「你為什麼偏愛獨自旅行？」。";
+    } else {
+        basePrompt = "請用繁體中文為我生成一個簡短、生活化、但又能引發思考的問題。";
+        examplePrompt = "例如：「為什麼整理房間能讓心情變好？」、「為什麼我們會在意陌生人的看法？」、「為什麼我們會對舊物品產生感情？」。";
+    }
+
+    let prompt = `${basePrompt}問題必須以「為什麼」或「如何」開頭。問題長度必須嚴格限制在 15 個字以內。${examplePrompt}請只輸出問題本身，不要有任何多餘文字或引號。`;
+
+    if (currentUsedSet.size > 0) {
+        const questionsToAvoid = [...currentUsedSet].join('\n- ');
+        prompt += `\n\n請務必生成一個全新的問題。為了避免重複，絕對不要生成以下列表中的任何一個問題：\n- ${questionsToAvoid}`;
+    }
+    if (isRefresh) prompt += `\n\n(這是一個刷新請求，請確保問題是新的)`;
+
+    const newQuestion = await getApiResponse(prompt, 0.95);
+    
+    if (!newQuestion.startsWith("抱歉")) {
+        currentUsedSet.add(newQuestion);
+        saveUsedQuestions();
+    }
+
+    UIManager.hideLoader(ui.questionLoader);
+    ui.questionContainer.textContent = newQuestion;
+    ui.questionContainer.style.opacity = 1;
+    ui.answerContainer.classList.remove('hidden');
+}
+
+// --- 歸納 (Induction) ---
+async function getInductionQuestion(isRefresh = false) {
+    loadUsedQuestions();
+    const currentUsedSet = usedQuestions.induction;
+    let prompt = `請用繁體中文生成一個「歸納」思維訓練題目。你的輸出必須是一個 JSON 物件，格式如下：
+{ 
+  "statements": ["一個陳述句", "另一個相關的陳述句", "第三個相關的陳述句"],
+  "ideal_summary": "歸納出的共通點"
+}
+- "statements" 鍵的值必須是一個包含 3 到 5 個相關陳述句的陣列，必須是情節、事實或觀點，不要與生物或科學相關。
+- "ideal_summary" 鍵的值是總結這些陳述句共通點的一個短語。
+- 題目內容必須多元化。
+- 請直接輸出 JSON 物件，絕對不要有任何其他文字或代碼標記。`;
+
+    if (currentUsedSet.size > 0) {
+        const summariesToAvoid = [...currentUsedSet].join('", "');
+        prompt += `\n\n為了避免重複，請確保生成的 "ideal_summary" 不要是以下任何一個：["${summariesToAvoid}"]`;
+    }
+
+    const response = await getApiResponse(prompt, 0.9);
+    
+    try {
+        const data = JSON.parse(response);
+        if (data.statements && data.ideal_summary) {
+            currentQuestionData = data;
+            currentUsedSet.add(data.ideal_summary);
+            saveUsedQuestions();
+
+            let statementsHtml = '<ul class="induction-statements">';
+            data.statements.forEach(stmt => { statementsHtml += `<li>${stmt}</li>`; });
+            statementsHtml += '</ul>';
+            ui.questionContainer.innerHTML = statementsHtml;
+        } else { throw new Error('Invalid JSON structure'); }
+    } catch (e) {
+        console.error("Failed to parse induction question:", e);
+        ui.questionContainer.textContent = "題目生成失敗，請重試。";
+    }
+
+    UIManager.hideLoader(ui.questionLoader);
+    ui.questionContainer.style.opacity = 1;
+    ui.answerContainer.classList.remove('hidden');
+}
+
+// --- 概括 (Generalization) ---
+async function getGeneralizationQuestion(isRefresh = false) {
+    loadUsedQuestions();
+    const currentUsedSet = usedQuestions.generalization;
+    let prompt = `請用繁體中文生成一個「概括」思維訓練題目。你的輸出必須是一個 JSON 物件，格式如下：
+{
+  "passage": "一段約150字的敘事或議論片段，題材要多元化，表達的感情或哲理都要多變，不可以經常都關於思念，用詞不要過於文學。",
+  "poor_summary": "一個對該片段的、空泛且欠缺具體元素的差劣概括。",
+  "ideal_summary": "一段精準、優秀的大要概括，只抽取最關鍵的信息要點，減去修飾，不能超出五十字，範例如「記述作者在清明節時帶媽媽回鄉，媽媽在火車上嚷著要回家，抒發了對母親患病的憐惜之情」，格式和內容都必須參照這個範例，但不一定具有所抒發的感情，句子開首通常會用「記述」、「描寫」、「刻劃」、「指出」、「說明」、「引用」、「論證」等字眼。。"
+}
+- "passage" 必須具文學性。
+- "poor_summary" 必須明顯地比 "ideal_summary" 差。
+- 題目內容必須多元化。
+- 請直接輸出 JSON 物件，絕對不要有任何其他文字或代碼標記。`;
+    
+     if (currentUsedSet.size > 0) {
+        const summariesToAvoid = [...currentUsedSet].join('", "');
+        prompt += `\n\n為了避免重複，請確保生成的 "ideal_summary" 不要是以下任何一個：["${summariesToAvoid}"]`;
+    }
+
+    const response = await getApiResponse(prompt, 0.8);
+
+    try {
+        const data = JSON.parse(response);
+        if (data.passage && data.poor_summary && data.ideal_summary) {
+            currentQuestionData = data;
+            currentUsedSet.add(data.ideal_summary);
+            saveUsedQuestions();
+
+            ui.questionContainer.innerHTML = `
+                <div class="generalization-passage">${data.passage}</div>
+                <div class="generalization-poor-summary"><strong>差劣示例：</strong>${data.poor_summary}</div>
+            `;
+        } else { throw new Error('Invalid JSON structure'); }
+    } catch (e) {
+        console.error("Failed to parse generalization question:", e);
+        ui.questionContainer.textContent = "題目生成失敗，請重試。";
+    }
+    
+    UIManager.hideLoader(ui.questionLoader);
+    ui.questionContainer.style.opacity = 1;
+    ui.answerContainer.classList.remove('hidden');
+}
+
+
+// --- 提交與回饋 (路由) ---
+async function getFeedback() {
+    const userAnswer = ui.answerTextarea.value.trim();
+    if (!userAnswer) {
+        alert("請先輸入您的答案。");
+        return;
+    }
+
+    ui.submitButton.disabled = true;
+    ui.answerTextarea.disabled = true;
+    UIManager.showLoader(ui.feedbackLoader);
+    
+    let prompt = "";
+    const feedbackPrompts = {
+        elucidation: () => {
+            const currentQuestion = ui.questionContainer.textContent.trim();
+            return `作為一個嚴格但友善的思維闡釋教練，請用繁體中文針對以下回答提供回饋和評分。
+### 問題:
+「${currentQuestion}」
+### 用戶回答:
+「${userAnswer}」
+### 你的任務:
+你的輸出必須嚴格遵守以下三部分的格式，絕對不能偏離。
+1. **分數 (Score)**: 在最開頭，必須使用 "[SCORE: X]" 的格式給出一個 0 到 100 之間的分數。X 代表數字。評分標準：回答是否直接、核心原因是否清晰、後續解釋的邏輯鏈是否緊密。若要得70分或以上，在邏輯鏈中必須最少有多於一個的步驟。
+2. **評語 (Critique)**: 在分數換行後，用一兩句簡潔的話，直接點出回答中的核心問題。語氣要像朋友給建議一樣。絕對不能包含 "評語" 這個詞。
+3. **分隔符與範例 (Separator & Example)**: 在評語結束後，立刻換行並輸出 "---" (三個減號)，然後再換行提供一個邏輯嚴謹的闡釋範例。範例的每一步驟只佔一行，且必須是層層遞進的因果關係。請不要用「大腦」等字眼，不要從過於科學的角度推論。`;
+        },
+        induction: () => {
+            const statements = currentQuestionData.statements.join('、');
+            return `作為一個友善的思維歸納教練，請用繁體中文評改以下回答。
+### 任務: 歸納以下陳述的共通點：
+"${statements}"
+### 理想答案方向: 
+"${currentQuestionData.ideal_summary}"
+### 用戶的歸納: 
+"${userAnswer}"
+### 你的評改:
+你的輸出必須嚴格遵守以下三部分的格式：
+1. **分數**: 在最開頭，必須使用 "[SCORE: X]" 的格式給出一個 0 到 100 之間的分數。X 代表數字。假如用詞已算精準，則可打滿分，不要吹毛求疵。
+2. **評語**: 在分數換行後，直接用一兩句簡潔的話點評。絕對不要包含「評語」這個詞或任何標題。
+3. **分隔符與範例**: 在評語後換行輸出 "---"，然後提供一個精準的歸納範例。`;
+        },
+        generalization: () => {
+            return `作為一個友善的文學分析教練，請用繁體中文評改以下概括修訂。
+### 原始段落:
+"${currentQuestionData.passage}"
+### 一個差劣的概括:
+"${currentQuestionData.poor_summary}"
+### 理想的修訂方向:
+"${currentQuestionData.ideal_summary}"
+### 用戶的修訂:
+"${userAnswer}"
+### 你的評改:
+你的輸出必須嚴格遵守以下三部分的格式：
+1. **分數**: 在最開頭，必須使用 "[SCORE: X]" 的格式給出一個 0 到 100 之間的分數。X 代表數字。假如用戶的修訂已算精準，加入了具體細節，則可打滿分，不要吹毛求疵。
+2. **評語**: 在分數換行後，直接用一兩句簡潔的話點評。絕對不要包含「評語」這個詞或任何標題。
+3. **分隔符與範例**: 在評語後換行輸出 "---"，然後提供一個優秀的修訂範例。`;
+        }
+    };
+
+    prompt = feedbackPrompts[currentTool]();
+    const feedbackText = await getApiResponse(prompt, 0.5);
+    renderFeedback(feedbackText);
+}
+
+function renderFeedback(feedbackText) {
+    UIManager.hideLoader(ui.feedbackLoader);
+
+    const scoreMatch = feedbackText.match(/\[SCORE:\s*(\d+)\s*\]/);
+    const score = scoreMatch ? scoreMatch[1] : null;
+
+    const feedbackWithoutScore = feedbackText.replace(/\[SCORE:\s*(\d+)\s*\]\n?/, '').trim();
+    const parts = feedbackWithoutScore.split('---');
+    const critique = parts[0]?.trim();
+    const exampleRaw = parts[1]?.trim();
+
+    let finalHtml = '';
+
+    if (score) {
+        finalHtml += `
+            <div class="feedback-section">
+                <h2 class="feedback-heading">分數</h2>
+                <div class="score-display-wrapper">
+                    <div class="feedback-score-circle"><span>${score}</span></div>
+                </div>
+            </div>`;
+    }
+
+    if (critique) {
+        finalHtml += `
+            <div class="feedback-section">
+                <h2 class="feedback-heading">評語</h2>
+                <p class="feedback-content">${critique}</p>
+            </div>`;
+    }
+
+    if (exampleRaw) {
+        let exampleHtml;
+        if (currentTool === 'elucidation') {
+            const exampleSteps = exampleRaw.split('\n').map(step => step.trim()).filter(step => step);
+            exampleHtml = '<ol class="feedback-example-steps">';
+            exampleSteps.forEach(step => {
+                const cleanStep = step.replace(/^\d+\.\s*/, '');
+                exampleHtml += `<li>${cleanStep}</li>`;
+            });
+            exampleHtml += '</ol>';
+        } else {
+            exampleHtml = `<p class="feedback-content">${exampleRaw}</p>`;
+        }
+        finalHtml += `
+            <div class="feedback-section">
+                <h2 class="feedback-heading">範例</h2>
+                ${exampleHtml}
+            </div>`;
+    }
+
+    if (finalHtml.trim() === '') {
+        // 如果解析完全失敗，顯示一個通用訊息或原始文本（選擇不顯示，以避免混亂）
+        ui.feedbackContainer.innerHTML = `<div class="feedback-section"><p class="feedback-content">抱歉，回饋解析失敗，請稍後再試。</p></div>`;
+    } else {
+        ui.feedbackContainer.innerHTML = finalHtml;
+    }
+
+    ui.feedbackContainer.classList.add('visible');
+    
+    if (isCustomMode) {
+        ui.newCustomQuestionWrapper.classList.remove('hidden');
+    } else {
+        ui.nextQuestionWrapper.classList.remove('hidden');
+    }
+}
+
+
+// --- 闡釋: 自訂模式相關 ---
+function toggleInputMode() {
+    isCustomMode = !isCustomMode;
+    UIManager.resetUI();
+
+    if (isCustomMode) {
+        ui.questionTypeSelectorWrapper.classList.add('hidden');
+        ui.refreshQuestionButton.classList.add('hidden');
+        ui.questionContainer.setAttribute('contenteditable', 'true');
+        ui.questionContainer.textContent = ''; 
+        ui.questionContainer.style.opacity = 1;
+        ui.answerContainer.classList.remove('hidden');
+        ui.questionContainer.focus();
+    } else {
+        // 返回 AI 模式時，重置為闡釋工具並獲取新問題
+        currentTool = 'elucidation';
+        ui.toolButtons.forEach(btn => btn.classList.remove('active'));
+        document.querySelector('.tool-button[data-tool="elucidation"]').classList.add('active');
+        UIManager.updateToolUI();
+        getNewQuestion();
+    }
+}
+
+function startNewCustomQuestion() {
+    UIManager.resetUI();
+    ui.questionContainer.setAttribute('contenteditable', 'true');
+    ui.questionContainer.style.opacity = 1;
+    ui.answerContainer.classList.remove('hidden');
+    ui.questionContainer.focus();
+}
+
+
+// --- 事件監聽 ---
+ui.submitButton.addEventListener('click', getFeedback);
+ui.nextQuestionButton.addEventListener('click', () => getNewQuestion(false));
+ui.refreshQuestionButton.addEventListener('click', () => getNewQuestion(true));
+ui.modeToggleButton.addEventListener('click', toggleInputMode);
+ui.newCustomQuestionButton.addEventListener('click', startNewCustomQuestion);
+
+ui.toolButtons.forEach(button => {
+    button.addEventListener('click', () => {
+        switchTool(button.dataset.tool);
+    });
+});
+
+ui.typeButtons.forEach(button => {
+    button.addEventListener('click', () => {
+        if (!button.classList.contains('active')) {
+            ui.typeButtons.forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+            getNewQuestion(false);
+        }
+    });
+});
+
+// --- 頁面首次加載 (修訂後) ---
+document.addEventListener('DOMContentLoaded', () => {
+    // 初始化 UI 到默認工具並獲取第一個問題
+    const defaultTool = 'elucidation';
+    currentTool = defaultTool;
+    document.querySelector(`.tool-button[data-tool="${defaultTool}"]`).classList.add('active');
+    UIManager.updateToolUI();
+    getNewQuestion();
+});
+
+</script>
 
 </body>
 </html>
