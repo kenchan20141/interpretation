@@ -832,7 +832,7 @@ async function getVocabularyQuestion(isRefresh = false) {
     const currentUsedSet = usedQuestions.vocabulary;
     let prompt = `請用繁體中文生成一個「用詞」思維訓練題目。你的輸出必須是一個 JSON 物件，格式如下：
 {
-  "description": "一段約25字的詞語定義，要與科學、機械、工程及農業無關，這段定義指向一個特定的中文詞語（名詞、動詞或形容詞），但描述中絕對不能出現答案詞語本身或其同義詞。",
+  "description": "一段約25字的詞語定義，要與科學、機械、工程及農業無關，這段定義指向一個特定的中文詞語（動詞或形容詞），但描述中絕對不能出現答案詞語本身或其同義詞。",
   "fill_in_sentence": "一句包含 '_________' 作為填充位置的句子，這句話能應用到答案詞語，不要超過18字。",
   "answer": "一個最能精準概括以上定義的雙字中文詞語。"
 }
