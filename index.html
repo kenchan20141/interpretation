@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
@@ -18,7 +17,6 @@
 --font-serif: "Noto Serif TC", "Source Han Serif TC", serif;
 --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
-
 /* --- 基礎佈局 --- */
 *, *::before, *::after { box-sizing: border-box; }
 html { height: 100%; }
@@ -34,7 +32,6 @@ margin: 0;
 padding: 2rem 1rem;
 -webkit-font-smoothing: antialiased;
 }
-
 /* --- 主容器 --- */
 .container {
 position: relative;
@@ -49,7 +46,6 @@ opacity: 0;
 animation: fadeIn 0.5s ease-out forwards;
 }
 @keyframes fadeIn { to { opacity: 1; } }
-
 /* --- 主範疇選擇器 --- */
 .tool-selector {
 display: flex;
@@ -84,7 +80,6 @@ height: 2px;
 background-color: var(--wabi-text-primary);
 transition: left 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), width 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
-
 /* --- 模式切換 SVG 按鈕 --- */
 #mode-toggle-button {
 position: absolute;
@@ -117,7 +112,6 @@ stroke-linecap: round;
 stroke-linejoin: round;
 fill: none;
 }
-
 /* --- 題型選擇器 --- */
 .type-selector {
 display: flex;
@@ -146,7 +140,6 @@ background-color: var(--wabi-text-primary);
 color: var(--wabi-surface);
 border-color: var(--wabi-text-primary);
 }
-
 /* --- 核心元素 --- */
 #question-wrapper {
 display: flex;
@@ -159,7 +152,6 @@ width: 100%;
 margin-left: auto;
 margin-right: auto;
 }
-
 #question-container {
 min-height: 50px;
 font-size: 1.35rem;
@@ -241,19 +233,24 @@ padding: 1.5rem;
 border-radius: 6px;
 border: 1px solid var(--wabi-border);
 }
-.vocabulary-fill-in-blank {
+.vocabulary-fill-in-blank-container {
 margin-top: 1.5rem;
 font-size: 1rem;
-text-align: left; /* 修訂為靠左 */
+text-align: left;
 color: var(--wabi-text-primary);
 font-family: var(--font-serif);
+padding: 1rem;
+background-color: #faf9f7;
+border-radius: 6px;
+border: 1px solid var(--wabi-border);
 }
-    .fill-in-line {
-    display: inline-block;
-    white-space: nowrap;
+.vocabulary-fill-in-blank {
+display: inline-block;
+white-space: nowrap;
+border-bottom: 2px solid var(--wabi-text-primary);
+min-width: 120px;
+text-align: center;
 }
-
-
 #question-container[contenteditable="true"] {
 outline: 2px solid transparent;
 background-color: #faf9f7;
@@ -271,7 +268,6 @@ content: '在此輸入您的問題...';
 color: var(--wabi-text-secondary);
 pointer-events: none;
 }
-
 #refresh-question-button {
 background: none;
 border: none;
@@ -295,7 +291,6 @@ stroke-linecap: round;
 stroke-linejoin: round;
 fill: none;
 }
-
 #answer-container { text-align: center; }
 #answer-textarea {
 text-align: left;
@@ -319,7 +314,6 @@ outline: none;
 border-color: #b8b3a9;
 box-shadow: 0 0 0 4px rgba(184, 179, 169, 0.15);
 }
-
 .wabi-button {
 background-color: var(--wabi-interactive);
 color: var(--wabi-text-primary);
@@ -336,7 +330,6 @@ transition: background-color 0.2s, transform 0.1s ease-out;
 .wabi-button:hover { background-color: var(--wabi-interactive-hover); }
 .wabi-button:active { transform: scale(0.98); }
 .wabi-button:disabled { opacity: 0.7; cursor: not-allowed; }
-
 /* --- 反饋區塊 --- */
 #feedback-container {
 margin-top: 2.5rem;
@@ -411,7 +404,6 @@ font-size: 3rem;
 font-weight: 300;
 color: var(--wabi-text-primary);
 }
-
 /* --- 加載動畫 --- */
 .loader {
 height: 3px;
@@ -427,23 +419,18 @@ display: none;
 0% { background-position: 150% 0; }
 100% { background-position: -150% 0; }
 }
-
 /* --- 可見性控制 --- */
 .hidden { display: none !important; }
-
 /* --- 響應式設計 --- */
 @media (max-width: 640px) {
     body { padding: 1rem 0.5rem; }
     .container { padding: 2rem 1.5rem; }
     .tool-button { padding: 0.8rem 1rem; font-size: 1rem; }
 }
-
 </style>
 </head>
 <body>
-
 <div class="container">
-    
     <div class="tool-selector">
         <button class="tool-button active" data-tool="induction">歸納</button>
         <button class="tool-button" data-tool="generalization">概括</button>
@@ -451,25 +438,21 @@ display: none;
         <button class="tool-button" data-tool="vocabulary">用詞</button>
         <div class="tool-button-underline"></div>
     </div>
-
     <button id="mode-toggle-button" title="切換 AI 擬題 / 自訂題目">
         <svg viewBox="0 0 24 24">
             <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4"></path>
             <path d="M13.5 6.5l4 4"></path>
         </svg>
     </button>
-    
     <div id="tool-content">
         <!-- 內容會由 JS 動態填入 -->
     </div>
-
     <div id="question-type-selector-wrapper">
         <div id="question-type-selector" class="type-selector">
             <button class="type-button active" data-type="life">生活</button>
             <button class="type-button" data-type="philosophy">哲學</button>
         </div>
     </div>
-    
     <div id="question-wrapper">
         <div id="question-container" contenteditable="false"></div>
         <button id="refresh-question-button" title="重新生成題目">
@@ -479,34 +462,1041 @@ display: none;
             </svg>
         </button>
     </div>
-    
     <div class="loader" id="question-loader"></div>
-    
     <div id="answer-container" class="hidden">
         <textarea id="answer-textarea" placeholder="..."></textarea>
         <button id="submit-button" class="wabi-button">提交</button>
     </div>
-    
     <div class="loader" id="feedback-loader"></div>
     <div id="feedback-container"></div>
-    
     <div id="next-question-wrapper" class="hidden" style="text-align: center;">
         <button id="next-question-button" class="wabi-button">下一題</button>
     </div>
-    
     <div id="new-custom-question-wrapper" class="hidden" style="text-align: center;">
         <button id="new-custom-question-button" class="wabi-button">自訂新題目</button>
     </div>
-
 </div>
-
 <script>
+// --- 修訂後的歸納題範例資料 (200題，完全不重複主題，無科學內容) ---
+const INDUCTION_EXAMPLES = [
+    {
+        "theme": "物品功能",
+        "statements": ["保溫瓶讓熱水保溫", "防火衣能抵禦高溫", "外送保溫袋確保食物溫度"],
+        "commonality": "隔絕溫度變化的功能"
+    },
+    {
+        "theme": "事前準備",
+        "statements": ["煮菜前要先備料", "畫畫前要先打底稿", "簡報前要先排練"],
+        "commonality": "在主要行動前的準備工作"
+    },
+    {
+        "theme": "生命型態轉變",
+        "statements": ["秋天葉子會變色", "毛毛蟲會變蝴蝶", "蝌蚪會變青蛙"],
+        "commonality": "生命型態的轉變過程"
+    },
+    {
+        "theme": "行為與後果",
+        "statements": ["濕手碰開關可能觸電", "圖書館大聲會打擾別人", "不運動體能會下降"],
+        "commonality": "行為引發的負面後果"
+    },
+    {
+        "theme": "節省資源",
+        "statements": ["關燈省電", "雙面列印省紙", "自備購物袋省塑膠"],
+        "commonality": "減少資源消耗的行為"
+    },
+    {
+        "theme": "聲音傳遞",
+        "statements": ["電話傳遞語音", "廣播播放音樂", "門鈴通知來客"],
+        "commonality": "透過聲音傳遞訊息"
+    },
+    {
+        "theme": "保護措施",
+        "statements": ["戴口罩防病毒", "裝鐵窗防盜", "塗防曬乳防曬傷"],
+        "commonality": "預防潛在危害的措施"
+    },
+    {
+        "theme": "時間管理",
+        "statements": ["設定鬧鐘準時起床", "使用行事曆安排會議", "倒數計時完成任務"],
+        "commonality": "協助掌控時間的工具或方法"
+    },
+    {
+        "theme": "社交禮儀",
+        "statements": ["進門前先敲門", "用餐前說「開動了」", "收到禮物要道謝"],
+        "commonality": "展現尊重他人的禮貌行為"
+    },
+    {
+        "theme": "情緒表達",
+        "statements": ["開心時會笑", "難過時會哭", "生氣時會皺眉"],
+        "commonality": "情緒透過面部或肢體展現"
+    },
+    {
+        "theme": "日常整理",
+        "statements": ["衣服摺好收進衣櫃", "書本按大小排列", "餐具歸位到抽屜"],
+        "commonality": "將物品分類歸位的整理行為"
+    },
+    {
+        "theme": "節慶習俗",
+        "statements": ["過年貼春聯", "中秋吃月餅", "端午包粽子"],
+        "commonality": "傳統節日中的特定習俗"
+    },
+    {
+        "theme": "交通規則",
+        "statements": ["紅燈停、綠燈行", "騎車戴安全帽", "行人走斑馬線"],
+        "commonality": "維護交通安全的規範"
+    },
+    {
+        "theme": "閱讀習慣",
+        "statements": ["睡前看書助眠", "讀書做筆記", "去圖書館借書"],
+        "commonality": "促進閱讀理解與持續的行為"
+    },
+    {
+        "theme": "飲食偏好",
+        "statements": ["有人不吃香菜", "有人怕吃辣", "有人討厭苦味"],
+        "commonality": "個人對食物味道的選擇差異"
+    },
+    {
+        "theme": "居家清潔",
+        "statements": ["拖地去灰塵", "擦窗讓透光", "倒垃圾防異味"],
+        "commonality": "維持居家環境整潔的動作"
+    },
+    {
+        "theme": "語言溝通",
+        "statements": ["打招呼說「你好」", "道歉說「對不起」", "道別說「再見」"],
+        "commonality": "日常對話中的固定用語"
+    },
+    {
+        "theme": "寵物照顧",
+        "statements": ["餵狗吃飼料", "幫貓梳毛", "遛鳥曬太陽"],
+        "commonality": "照顧寵物的基本需求"
+    },
+    {
+        "theme": "購物行為",
+        "statements": ["比價再下單", "看評論再買", "領優惠券省錢"],
+        "commonality": "理性消費的決策方式"
+    },
+    {
+        "theme": "睡眠習慣",
+        "statements": ["睡前關手機", "拉窗簾遮光", "調低室溫助眠"],
+        "commonality": "營造良好睡眠環境的做法"
+    },
+    {
+        "theme": "旅行準備",
+        "statements": ["查天氣帶衣物", "下載離線地圖", "預訂住宿"],
+        "commonality": "出發前確保行程順利的安排"
+    },
+    {
+        "theme": "家庭角色",
+        "statements": ["媽媽煮飯", "爸爸修電器", "孩子整理書包"],
+        "commonality": "家庭成員承擔的不同責任"
+    },
+    {
+        "theme": "節日裝飾",
+        "statements": ["聖誕樹掛燈飾", "春節掛紅燈籠", "萬聖節擺南瓜"],
+        "commonality": "節慶期間的視覺佈置"
+    },
+    {
+        "theme": "人際互動",
+        "statements": ["朋友生日送禮", "同事離職寫卡片", "鄰居搬家幫忙"],
+        "commonality": "維繫關係的善意舉動"
+    },
+    {
+        "theme": "自我照顧",
+        "statements": ["每天喝水", "定期剪指甲", "早晚刷牙"],
+        "commonality": "維持個人基本衛生的習慣"
+    },
+    {
+        "theme": "娛樂方式",
+        "statements": ["看電影放鬆", "打電動解悶", "聽音樂舒壓"],
+        "commonality": "個人選擇的休閒活動"
+    },
+    {
+        "theme": "天氣應對",
+        "statements": ["下雨帶傘", "出太陽戴帽子", "寒流穿厚外套"],
+        "commonality": "根據氣候調整穿著或行為"
+    },
+    {
+        "theme": "學習策略",
+        "statements": ["用閃卡背單字", "畫心智圖整理筆記", "小組討論釐清觀念"],
+        "commonality": "提升學習效率的方法"
+    },
+    {
+        "theme": "飲食禮儀",
+        "statements": ["不插隊點餐", "不大聲咀嚼", "不浪費食物"],
+        "commonality": "公共用餐場合的行為規範"
+    },
+    {
+        "theme": "空間利用",
+        "statements": ["床底收行李箱", "牆上掛置物架", "門後掛包包"],
+        "commonality": "善用垂直或隱蔽空間收納"
+    },
+    {
+        "theme": "節日祝福",
+        "statements": ["新年說恭喜發財", "生日唱生日快樂", "結婚說百年好合"],
+        "commonality": "特定場合的吉祥話"
+    },
+    {
+        "theme": "健康習慣",
+        "statements": ["飯後散步", "久坐起身伸展", "定期健檢"],
+        "commonality": "預防疾病的生活方式"
+    },
+    {
+        "theme": "送禮考量",
+        "statements": ["送長輩保健品", "送小孩玩具", "送朋友書"],
+        "commonality": "根據對象喜好選擇禮物"
+    },
+    {
+        "theme": "社區參與",
+        "statements": ["參加里民大會", "幫忙社區掃街", "捐物資給弱勢"],
+        "commonality": "促進社區和諧的行動"
+    },
+    {
+        "theme": "節慶食物",
+        "statements": ["元宵吃湯圓", "冬至吃餃子", "清明吃青團"],
+        "commonality": "節氣對應的傳統飲食"
+    },
+    {
+        "theme": "時間標記",
+        "statements": ["生日慶祝年齡增長", "週年紀念感情", "畢業典禮標誌階段結束"],
+        "commonality": "用儀式記錄人生重要時刻"
+    },
+    {
+        "theme": "服裝搭配",
+        "statements": ["正式場合穿西裝", "運動穿運動服", "睡覺穿睡衣"],
+        "commonality": "依場合選擇合適穿著"
+    },
+    {
+        "theme": "環境適應",
+        "statements": ["進廟脫鞋", "進圖書館安靜", "進餐廳排隊"],
+        "commonality": "進入特定場所的行為調整"
+    },
+    {
+        "theme": "記憶輔助",
+        "statements": ["用手機設提醒", "寫便利貼貼鏡子", "用日曆標記"],
+        "commonality": "避免遺忘重要事項的工具"
+    },
+    {
+        "theme": "情感支持",
+        "statements": ["朋友失戀陪聊天", "家人生病送湯", "同事壓力大請喝咖啡"],
+        "commonality": "在他人困難時提供關懷"
+    },
+    {
+        "theme": "節慶活動",
+        "statements": ["廟會看表演", "跨年倒數", "放天燈祈福"],
+        "commonality": "節日特有的集體參與活動"
+    },
+    {
+        "theme": "日常節奏",
+        "statements": ["早上喝咖啡提神", "午休小憩", "晚上泡腳放鬆"],
+        "commonality": "建立個人生活節奏的習慣"
+    },
+    {
+        "theme": "禮貌拒絕",
+        "statements": ["婉拒邀約說「下次吧」", "不收禮物說「太客氣了」", "推辭幫忙說「我可能幫不上」"],
+        "commonality": "不傷和氣地表達拒絕"
+    },
+    {
+        "theme": "節省開支",
+        "statements": ["自煮便當", "二手買書", "搭公車代替計程車"],
+        "commonality": "控制日常花費的策略"
+    },
+    {
+        "theme": "家庭傳統",
+        "statements": ["週末全家吃飯", "每年拍全家福", "除夕守歲"],
+        "commonality": "維繫家庭情感的固定活動"
+    },
+    {
+        "theme": "公共禮儀",
+        "statements": ["電梯讓老人先上", "捷運上讓座", "不佔用無障礙設施"],
+        "commonality": "尊重弱勢的公共行為"
+    },
+    {
+        "theme": "個人風格",
+        "statements": ["有人愛穿黑白", "有人留長髮", "有人戴眼鏡"],
+        "commonality": "展現自我特色的外在表現"
+    },
+    {
+        "theme": "節慶象徵",
+        "statements": ["紅包代表吉利", "燈籠象徵光明", "年糕寓意步步高"],
+        "commonality": "節日物品背後的文化寓意"
+    },
+    {
+        "theme": "日常感謝",
+        "statements": ["對服務員說謝謝", "收到幫忙道謝", "別人讓路致意"],
+        "commonality": "表達感激的微小舉動"
+    },
+    {
+        "theme": "季節更替",
+        "statements": ["春天賞花", "夏天吃西瓜", "冬天進補"],
+        "commonality": "配合季節的生活方式"
+    },
+    {
+        "theme": "家庭溝通",
+        "statements": ["晚餐時聊天", "週末開家庭會議", "留言在冰箱"],
+        "commonality": "促進家人交流的方式"
+    },
+    {
+        "theme": "節慶音樂",
+        "statements": ["聖誕節聽鈴鐺聲", "過年放鞭炮", "婚禮奏進行曲"],
+        "commonality": "特定場合播放的背景音樂"
+    },
+    {
+        "theme": "自我激勵",
+        "statements": ["設定小目標獎勵自己", "貼勵志語錄在牆上", "記錄成就日記"],
+        "commonality": "提升動力的心理技巧"
+    },
+    {
+        "theme": "節慶色彩",
+        "statements": ["婚禮用紅色", "喪禮用黑色", "兒童節用彩色"],
+        "commonality": "不同場合對應的顏色象徵"
+    },
+    {
+        "theme": "生活小技巧",
+        "statements": ["用橡皮筋防門滑", "冰塊去地毯壓痕", "茶包除異味"],
+        "commonality": "解決日常小問題的妙招"
+    },
+    {
+        "theme": "節慶禮物",
+        "statements": ["情人節送巧克力", "教師節送卡片", "母親節送康乃馨"],
+        "commonality": "特定節日贈送的代表性禮物"
+    },
+    {
+        "theme": "日常觀察",
+        "statements": ["注意天氣變化", "觀察路人表情", "留意店家招牌"],
+        "commonality": "培養敏銳感知的習慣"
+    },
+    {
+        "theme": "節慶聚會",
+        "statements": ["尾牙公司聚餐", "同學會回母校", "家族團圓飯"],
+        "commonality": "特定群體的定期相聚"
+    },
+    {
+        "theme": "個人空間",
+        "statements": ["書桌只放必要物品", "房間不讓外人進", "耳機隔絕噪音"],
+        "commonality": "建立私人界限的方式"
+    },
+    {
+        "theme": "節慶儀式",
+        "statements": ["拜拜上香", "點蠟燭許願", "敲鐘祈福"],
+        "commonality": "透過動作表達心願的傳統"
+    },
+    {
+        "theme": "日常分享",
+        "statements": ["分享美食照片", "轉發有趣文章", "推薦好書給朋友"],
+        "commonality": "主動傳遞資訊或體驗的行為"
+    },
+    {
+        "theme": "節慶故事",
+        "statements": ["講年獸傳說", "說嫦娥奔月", "談聖誕老人"],
+        "commonality": "節日背後流傳的民間故事"
+    },
+    {
+        "theme": "生活節奏",
+        "statements": ["週一規劃行程", "週三小放鬆", "週末大掃除"],
+        "commonality": "以週為單位的生活安排"
+    },
+    {
+        "theme": "節慶服飾",
+        "statements": ["過年穿新衣", "婚禮穿禮服", "畢業穿學士服"],
+        "commonality": "特殊場合的專屬穿著"
+    },
+    {
+        "theme": "日常記錄",
+        "statements": ["寫日記抒發心情", "拍照留念", "記帳掌握開支"],
+        "commonality": "留下生活痕跡的方式"
+    },
+    {
+        "theme": "節慶遊戲",
+        "statements": ["玩撲克牌守歲", "抽紅包", "猜燈謎"],
+        "commonality": "節日增添樂趣的互動活動"
+    },
+    {
+        "theme": "個人成長",
+        "statements": ["每月讀一本書", "學新語言", "練習冥想"],
+        "commonality": "持續提升自我的行動"
+    },
+    {
+        "theme": "節慶裝扮",
+        "statements": ["萬聖節化妝", "舞會戴面具", "嘉年華穿奇裝"],
+        "commonality": "節日中改變外貌的趣味行為"
+    },
+    {
+        "theme": "日常決策",
+        "statements": ["看評分選餐廳", "比較價格買電器", "問朋友推薦電影"],
+        "commonality": "依靠外部資訊做選擇"
+    },
+    {
+        "theme": "節慶祈福",
+        "statements": ["寫願望卡", "放水燈", "繫紅絲帶"],
+        "commonality": "將心願寄託於具體物品"
+    },
+    {
+        "theme": "生活儀式感",
+        "statements": ["週末喝下午茶", "生日點蠟燭", "新年寫願望"],
+        "commonality": "為平凡日子增添意義的習慣"
+    },
+    {
+        "theme": "節慶表演",
+        "statements": ["舞龍舞獅", "聖誕老人發糖", "廟會陣頭"],
+        "commonality": "節日特有的公開演出"
+    },
+    {
+        "theme": "日常放鬆",
+        "statements": ["泡澡聽音樂", "看雲發呆", "散步不帶手機"],
+        "commonality": "刻意讓自己慢下來的行為"
+    },
+    {
+        "theme": "節慶市場",
+        "statements": ["年貨大街", "夜市辦桌", "聖誕市集"],
+        "commonality": "節日期間出現的特殊市集"
+    },
+    {
+        "theme": "個人整理",
+        "statements": ["定期清理手機相簿", "整理通訊錄", "刪除不用的APP"],
+        "commonality": "維持數位空間整潔的習慣"
+    },
+    {
+        "theme": "節慶燈光",
+        "statements": ["聖誕樹燈飾", "元宵花燈", "廟宇燈籠"],
+        "commonality": "節日用燈光營造氛圍"
+    },
+    {
+        "theme": "日常小確幸",
+        "statements": ["收到手寫信", "咖啡拉花成功", "陽台曬太陽"],
+        "commonality": "生活中微小但令人愉悅的瞬間"
+    },
+    {
+        "theme": "節慶舞蹈",
+        "statements": ["原住民豐年祭", "廟會陣頭舞", "跨年派對跳舞"],
+        "commonality": "節日中以舞蹈表達歡慶"
+    },
+    {
+        "theme": "生活小目標",
+        "statements": ["今天不滑手機", "一週不喝手搖飲", "每日寫三件好事"],
+        "commonality": "短期可達成的自我約定"
+    },
+    {
+        "theme": "節慶香氣",
+        "statements": ["年節焚香", "聖誕肉桂味", "廟宇線香"],
+        "commonality": "節日特有的嗅覺記憶"
+    },
+    {
+        "theme": "日常感謝",
+        "statements": ["寫感謝卡", "口頭表達謝意", "回贈小禮物"],
+        "commonality": "不同形式的感恩表達"
+    },
+    {
+        "theme": "節慶聲音",
+        "statements": ["鞭炮聲", "教堂鐘聲", "廟會鑼鼓"],
+        "commonality": "節日中代表性的聽覺符號"
+    },
+    {
+        "theme": "生活小挑戰",
+        "statements": ["一週不買東西", "三天早起", "一天不說負面話"],
+        "commonality": "短期自我鍛鍊的嘗試"
+    },
+    {
+        "theme": "節慶手工",
+        "statements": ["做春節剪紙", "編聖誕花圈", "摺元宵燈籠"],
+        "commonality": "節日親手製作的裝飾品"
+    },
+    {
+        "theme": "日常反思",
+        "statements": ["睡前回想今天", "每週檢討目標", "寫情緒日記"],
+        "commonality": "促進自我覺察的習慣"
+    },
+    {
+        "theme": "節慶飲品",
+        "statements": ["冬至喝薑茶", "聖誕熱紅酒", "中秋桂花茶"],
+        "commonality": "節日搭配的特色飲料"
+    },
+    {
+        "theme": "生活小習慣",
+        "statements": ["進門換拖鞋", "出門檢查鑰匙", "回家洗手"],
+        "commonality": "自動化卻重要的日常流程"
+    },
+    {
+        "theme": "節慶故事",
+        "statements": ["講年獸來歷", "說屈原投江", "談耶穌誕生"],
+        "commonality": "節日背後的歷史或神話"
+    },
+    {
+        "theme": "日常小禮物",
+        "statements": ["送同事糖果", "給鄰居多餘蔬果", "送朋友手作餅乾"],
+        "commonality": "不經意傳遞溫暖的舉動"
+    },
+    {
+        "theme": "節慶色彩",
+        "statements": ["春節紅色", "清明白色", "中秋金色"],
+        "commonality": "節日主視覺的顏色選擇"
+    },
+    {
+        "theme": "生活小整理",
+        "statements": ["每週清理冰箱", "每月整理衣櫃", "每天歸位鑰匙"],
+        "commonality": "防止混亂的微型整理"
+    },
+    {
+        "theme": "節慶祈願",
+        "statements": ["寫天燈願望", "掛許願卡", "投錢到許願池"],
+        "commonality": "將心願具象化的行為"
+    },
+    {
+        "theme": "日常小成就",
+        "statements": ["準時起床", "完成待辦清單", "主動打招呼"],
+        "commonality": "值得肯定的微小勝利"
+    },
+    {
+        "theme": "節慶服裝",
+        "statements": ["漢服過年", "和服賞櫻", "民族服飾祭典"],
+        "commonality": "節日穿著的文化服飾"
+    },
+    {
+        "theme": "生活小驚喜",
+        "statements": ["收到意外禮物", "發現新咖啡廳", "偶遇老朋友"],
+        "commonality": "非預期但令人開心的事件"
+    },
+    {
+        "theme": "節慶裝飾",
+        "statements": ["春聯", "聖誕襪", "萬聖南瓜"],
+        "commonality": "節日空間佈置的標誌物"
+    },
+    {
+        "theme": "日常小堅持",
+        "statements": ["每天喝八杯水", "每餐吃蔬菜", "每晚十點睡"],
+        "commonality": "長期累積效益的微習慣"
+    },
+    {
+        "theme": "節慶食物造型",
+        "statements": ["湯圓圓形", "月餅有花紋", "年糕層層堆"],
+        "commonality": "節慶食品的視覺設計"
+    },
+    {
+        "theme": "生活小冒險",
+        "statements": ["嘗試新路線回家", "點沒吃過的菜", "主動搭訕陌生人"],
+        "commonality": "打破常規的小嘗試"
+    },
+    {
+        "theme": "節慶音樂節奏",
+        "statements": ["廟會鑼鼓", "聖誕鈴鐺", "婚禮進行曲"],
+        "commonality": "節日特有的聽覺節奏"
+    },
+    {
+        "theme": "日常小放縱",
+        "statements": ["週末賴床", "吃一整包零食", "看一整天劇"],
+        "commonality": "偶爾允許自己的小任性"
+    },
+    {
+        "theme": "節慶象徵動物",
+        "statements": ["龍年舞龍", "虎年玩偶", "兔年燈籠"],
+        "commonality": "節日中代表年份的動物形象"
+    },
+    {
+        "theme": "生活小創造",
+        "statements": ["自製便當擺盤", "手寫卡片", "DIY小物"],
+        "commonality": "日常中的創意表現"
+    },
+    {
+        "theme": "節慶祈福動作",
+        "statements": ["拜拜合十", "點蠟燭", "敲鐘"],
+        "commonality": "節日中表達祈願的肢體語言"
+    },
+    {
+        "theme": "日常小學習",
+        "statements": ["學一句外語", "查一個冷知識", "看一篇短文"],
+        "commonality": "零碎時間的知識吸收"
+    },
+    {
+        "theme": "節慶團圓",
+        "statements": ["年夜飯", "中秋烤肉", "尾牙聚餐"],
+        "commonality": "節日促進親友相聚的活動"
+    },
+    {
+        "theme": "生活小分享",
+        "statements": ["分享好歌", "推薦影集", "傳美食照"],
+        "commonality": "透過數位方式傳遞喜好"
+    },
+    {
+        "theme": "節慶時間",
+        "statements": ["除夕守歲", "跨年倒數", "午夜敲鐘"],
+        "commonality": "節日中特別標記的時間點"
+    },
+    {
+        "theme": "日常小照顧",
+        "statements": ["幫植物澆水", "餵流浪貓", "提醒家人吃藥"],
+        "commonality": "對他人或生命的細微關懷"
+    },
+    {
+        "theme": "節慶燈光色彩",
+        "statements": ["聖誕紅綠燈", "廟會七彩燈", "元宵花燈"],
+        "commonality": "節日燈飾的配色風格"
+    },
+    {
+        "theme": "生活小整理",
+        "statements": ["清理桌面", "歸檔文件", "整理書架"],
+        "commonality": "恢復秩序的微型行動"
+    },
+    {
+        "theme": "節慶祈福地點",
+        "statements": ["廟宇", "教堂", "河邊放水燈"],
+        "commonality": "節日進行祈福的特定場所"
+    },
+    {
+        "theme": "日常小記錄",
+        "statements": ["拍每日早餐", "記開心小事", "存電影票根"],
+        "commonality": "保存生活片段的方式"
+    },
+    {
+        "theme": "節慶服飾配件",
+        "statements": ["紅包袋", "聖誕帽", "舞會面具"],
+        "commonality": "節日穿著的點綴物品"
+    },
+    {
+        "theme": "生活小選擇",
+        "statements": ["選靠窗座位", "挑小包裝零食", "走人少的路"],
+        "commonality": "個人偏好的微小決定"
+    },
+    {
+        "theme": "節慶聲音氛圍",
+        "statements": ["廟會鑼鼓喧天", "聖誕鈴鐺輕響", "跨年煙火聲"],
+        "commonality": "節日營造的聽覺環境"
+    },
+    {
+        "theme": "日常小放鬆",
+        "statements": ["深呼吸三次", "閉眼一分鐘", "聽一首老歌"],
+        "commonality": "快速恢復平靜的技巧"
+    },
+    {
+        "theme": "節慶食物分享",
+        "statements": ["分年糕", "送月餅", "請吃湯圓"],
+        "commonality": "節日透過食物傳遞祝福"
+    },
+    {
+        "theme": "生活小目標",
+        "statements": ["今天不抱怨", "一週不遲到", "每日說一句讚美"],
+        "commonality": "可量化的小型自我約定"
+    },
+    {
+        "theme": "節慶裝飾材質",
+        "statements": ["紅紙春聯", "松枝聖誕圈", "竹編燈籠"],
+        "commonality": "節日裝飾使用的傳統材料"
+    },
+    {
+        "theme": "日常小感謝",
+        "statements": ["對快遞說謝謝", "感謝同事幫忙", "謝謝家人煮飯"],
+        "commonality": "即時表達感激的習慣"
+    },
+    {
+        "theme": "節慶祈福文字",
+        "statements": ["寫願望卡", "貼祈福貼紙", "刻許願木牌"],
+        "commonality": "將心願寫下來的形式"
+    },
+    {
+        "theme": "生活小冒險",
+        "statements": ["走沒去過的巷子", "試新髮型", "參加陌生活動"],
+        "commonality": "拓展舒適圈的微行動"
+    },
+    {
+        "theme": "節慶色彩搭配",
+        "statements": ["春節紅金", "聖誕紅綠", "婚禮白金"],
+        "commonality": "節日視覺的標準配色"
+    },
+    {
+        "theme": "日常小整理",
+        "statements": ["清理手機通知", "整理桌面電線", "歸位遙控器"],
+        "commonality": "消除視覺雜亂的舉動"
+    },
+    {
+        "theme": "節慶時間儀式",
+        "statements": ["除夕守歲到午夜", "跨年倒數", "生日吹蠟燭"],
+        "commonality": "在特定時刻進行的儀式"
+    },
+    {
+        "theme": "生活小創造",
+        "statements": ["自製調味料", "手繪明信片", "編織杯套"],
+        "commonality": "日常中的手工創作"
+    },
+    {
+        "theme": "節慶祈福象徵",
+        "statements": ["紅包壓歲", "燈籠照亮", "天燈升空"],
+        "commonality": "祈福物品的象徵意義"
+    },
+    {
+        "theme": "日常小學習",
+        "statements": ["學做一道菜", "記一個成語", "練一句口語"],
+        "commonality": "生活中的微型學習"
+    },
+    {
+        "theme": "節慶團圓食物",
+        "statements": ["年夜飯圍爐", "中秋月餅", "冬至湯圓"],
+        "commonality": "象徵團圓的節慶食品"
+    },
+    {
+        "theme": "生活小分享",
+        "statements": ["分享好書", "推薦APP", "傳有趣影片"],
+        "commonality": "數位時代的善意傳遞"
+    },
+    {
+        "theme": "節慶燈光佈置",
+        "statements": ["聖誕樹燈串", "廟會燈籠海", "元宵花燈展"],
+        "commonality": "節日大規模的燈光裝飾"
+    },
+    {
+        "theme": "日常小照顧",
+        "statements": ["幫同事倒水", "提醒朋友帶傘", "照顧盆栽"],
+        "commonality": "對周遭的細微關懷"
+    },
+    {
+        "theme": "節慶服飾顏色",
+        "statements": ["婚禮白", "喪禮黑", "春節紅"],
+        "commonality": "服裝顏色的文化意涵"
+    },
+    {
+        "theme": "生活小選擇",
+        "statements": ["選安靜角落", "挑靠門座位", "走樹蔭下"],
+        "commonality": "個人舒適導向的決定"
+    },
+    {
+        "theme": "節慶聲音元素",
+        "statements": ["鞭炮", "鑼鼓", "鈴鐺"],
+        "commonality": "節日不可或缺的聲音符號"
+    },
+    {
+        "theme": "日常小放鬆",
+        "statements": ["泡腳", "聽雨聲", "看星星"],
+        "commonality": "低成本的舒壓方式"
+    },
+    {
+        "theme": "節慶食物寓意",
+        "statements": ["年糕步步高", "魚年年有餘", "湯圓團圓"],
+        "commonality": "節慶食品的吉祥象徵"
+    },
+    {
+        "theme": "生活小目標",
+        "statements": ["今天不滑社群", "一週不外食", "每日運動十分鐘"],
+        "commonality": "可執行的短期目標"
+    },
+    {
+        "theme": "節慶裝飾位置",
+        "statements": ["門口貼春聯", "聖誕樹放客廳", "燈籠掛廟埕"],
+        "commonality": "節日裝飾的固定擺放處"
+    },
+    {
+        "theme": "日常小感謝",
+        "statements": ["寫感謝便條", "口頭稱讚", "點讚留言"],
+        "commonality": "多元的感恩表達形式"
+    },
+    {
+        "theme": "節慶祈福方式",
+        "statements": ["拜拜", "點蠟燭", "放天燈"],
+        "commonality": "不同文化的祈福行為"
+    },
+    {
+        "theme": "生活小冒險",
+        "statements": ["試陌生餐廳", "搭不同公車", "參加讀書會"],
+        "commonality": "探索未知的小嘗試"
+    },
+    {
+        "theme": "節慶色彩心理",
+        "statements": ["紅色喜氣", "白色純潔", "金色富貴"],
+        "commonality": "節日顏色的情感聯想"
+    },
+    {
+        "theme": "日常小整理",
+        "statements": ["清理郵件", "整理相簿", "歸檔收據"],
+        "commonality": "數位與實體的微型整理"
+    },
+    {
+        "theme": "節慶時間意義",
+        "statements": ["除夕除舊佈新", "跨年迎新", "生日成長"],
+        "commonality": "節日時間點的象徵意義"
+    },
+    {
+        "theme": "生活小創造",
+        "statements": ["自製果醬", "手寫菜單", "改造舊衣"],
+        "commonality": "日常中的創意實踐"
+    },
+    {
+        "theme": "節慶祈福對象",
+        "statements": ["拜神明", "祈求家人平安", "許自己願望"],
+        "commonality": "祈福時心之所繫的對象"
+    },
+    {
+        "theme": "日常小學習",
+        "statements": ["學折紙", "記路名", "練字"],
+        "commonality": "生活技能的微型提升"
+    },
+    {
+        "theme": "節慶團圓象徵",
+        "statements": ["圍爐", "月餅分食", "湯圓共煮"],
+        "commonality": "食物作為團聚的媒介"
+    },
+    {
+        "theme": "生活小分享",
+        "statements": ["分享旅行照", "傳食譜", "推薦好店"],
+        "commonality": "經驗與資訊的善意流通"
+    },
+    {
+        "theme": "節慶燈光功能",
+        "statements": ["照亮路途", "營造氣氛", "驅邪祈福"],
+        "commonality": "節日燈光的多重作用"
+    },
+    {
+        "theme": "日常小照顧",
+        "statements": ["幫長輩按電梯", "替同事帶咖啡", "餵公園鴿子"],
+        "commonality": "對他人與動物的溫柔舉動"
+    },
+    {
+        "theme": "節慶服飾演變",
+        "statements": ["傳統漢服", "現代改良", "混搭風格"],
+        "commonality": "節日穿著的時代變化"
+    },
+    {
+        "theme": "生活小選擇",
+        "statements": ["選自然光", "挑木質桌", "走草地"],
+        "commonality": "偏好自然元素的決定"
+    },
+    {
+        "theme": "節慶聲音記憶",
+        "statements": ["童年鞭炮聲", "廟會鑼鼓", "聖誕鈴鐺"],
+        "commonality": "節日聲音喚起的情感記憶"
+    },
+    {
+        "theme": "日常小放鬆",
+        "statements": ["聞香氛", "摸毛絨玩具", "看雲流動"],
+        "commonality": "觸發感官的舒壓方式"
+    },
+    {
+        "theme": "節慶食物工藝",
+        "statements": ["手工月餅", "捏麵龜", "包粽子"],
+        "commonality": "節慶食品的手作傳統"
+    },
+    {
+        "theme": "生活小目標",
+        "statements": ["今天不買東西", "一週不熬夜", "每日寫日記"],
+        "commonality": "可追蹤的微型目標"
+    },
+    {
+        "theme": "節慶裝飾工藝",
+        "statements": ["剪紙", "編燈籠", "畫年畫"],
+        "commonality": "節日裝飾的手工技藝"
+    },
+    {
+        "theme": "日常小感謝",
+        "statements": ["對司機說謝謝", "感謝店員服務", "謝謝朋友聆聽"],
+        "commonality": "即時且具體的感恩表達"
+    },
+    {
+        "theme": "節慶祈福心態",
+        "statements": ["誠心祈求", "默默許願", "雙手合十"],
+        "commonality": "祈福時內在的專注狀態"
+    },
+    {
+        "theme": "生活小冒險",
+        "statements": ["試新運動", "參加市集", "主動聊天"],
+        "commonality": "拓展社交與體驗的嘗試"
+    },
+    {
+        "theme": "節慶色彩搭配原則",
+        "statements": ["對比色", "同色系", "主色+點綴"],
+        "commonality": "節日視覺設計的配色邏輯"
+    },
+    {
+        "theme": "日常小整理",
+        "statements": ["清理瀏覽器書籤", "整理充電線", "歸位鑰匙圈"],
+        "commonality": "提升效率的微型整理"
+    },
+    {
+        "theme": "節慶時間循環",
+        "statements": ["年復一年", "週而復始", "代代相傳"],
+        "commonality": "節日作為時間錨點的意義"
+    },
+    {
+        "theme": "生活小創造",
+        "statements": ["自製香包", "手繪地圖", "編故事"],
+        "commonality": "日常中的微型創作"
+    },
+    {
+        "theme": "節慶祈福集體性",
+        "statements": ["廟會參拜", "跨年倒數", "放天燈"],
+        "commonality": "節日祈福的群體參與"
+    },
+    {
+        "theme": "日常小學習",
+        "statements": ["學魔術", "記星座", "練口哨"],
+        "commonality": "有趣且實用的微型技能"
+    },
+    {
+        "theme": "節慶團圓情感",
+        "statements": ["思念家人", "珍惜相聚", "期待再見"],
+        "commonality": "節日團聚背後的情感核心"
+    },
+    {
+        "theme": "生活小分享",
+        "statements": ["分享心得", "傳好文", "推薦音樂"],
+        "commonality": "知識與美感的善意傳遞"
+    },
+    {
+        "theme": "節慶燈光藝術",
+        "statements": ["花燈造型", "燈飾投影", "光影互動"],
+        "commonality": "節日燈光的藝術表現"
+    },
+    {
+        "theme": "日常小照顧",
+        "statements": ["幫忙提重物", "提醒喝水", "關心心情"],
+        "commonality": "對他人需求的細微察覺"
+    },
+    {
+        "theme": "節慶服飾文化",
+        "statements": ["漢服", "和服", "韓服"],
+        "commonality": "節日穿著的文化根源"
+    },
+    {
+        "theme": "生活小選擇",
+        "statements": ["選實木家具", "挑棉質衣物", "走老街"],
+        "commonality": "偏好質感與歷史的決定"
+    },
+    {
+        "theme": "節慶聲音節奏",
+        "statements": ["鑼鼓快慢", "鈴鐺輕重", "鞭炮疏密"],
+        "commonality": "節日聲音的節奏變化"
+    },
+    {
+        "theme": "日常小放鬆",
+        "statements": ["泡茶", "聞咖啡香", "摸貓"],
+        "commonality": "觸發愉悅感的感官體驗"
+    },
+    {
+        "theme": "節慶食物分享儀式",
+        "statements": ["分年糕", "切蛋糕", "共食湯圓"],
+        "commonality": "透過分享強化連結的行為"
+    },
+    {
+        "theme": "生活小目標",
+        "statements": ["今天不看新聞", "一週不點外送", "每日運動"],
+        "commonality": "促進身心健康的微型承諾"
+    },
+    {
+        "theme": "節慶裝飾象徵",
+        "statements": ["春聯迎福", "聖誕樹希望", "燈籠光明"],
+        "commonality": "節日裝飾的吉祥寓意"
+    },
+    {
+        "theme": "日常小感謝",
+        "statements": ["對清潔人員道謝", "感謝志工", "謝謝陌生人幫忙"],
+        "commonality": "對無名付出的感恩"
+    },
+    {
+        "theme": "節慶祈福延續性",
+        "statements": ["年年拜拜", "每年許願", "代代相傳"],
+        "commonality": "祈福行為的時間延續"
+    },
+    {
+        "theme": "生活小冒險",
+        "statements": ["試新路線", "參加工作坊", "主動邀約"],
+        "commonality": "主動創造機會的嘗試"
+    },
+    {
+        "theme": "節慶色彩情感",
+        "statements": ["紅色熱情", "金色喜悅", "白色純淨"],
+        "commonality": "節日顏色的情感聯結"
+    },
+    {
+        "theme": "日常小整理",
+        "statements": ["清理桌面", "整理書架", "歸位工具"],
+        "commonality": "恢復秩序的微型行動"
+    },
+    {
+        "theme": "節慶時間儀式感",
+        "statements": ["除夕守歲", "跨年倒數", "生日吹蠟燭"],
+        "commonality": "標記時間流逝的儀式"
+    },
+    {
+        "theme": "生活小創造",
+        "statements": ["自製調味", "手寫卡片", "DIY裝飾"],
+        "commonality": "日常中的創意實踐"
+    },
+    {
+        "theme": "節慶祈福個人性",
+        "statements": ["許個人願望", "祈求健康", "希望順利"],
+        "commonality": "祈福內容的個人化"
+    },
+    {
+        "theme": "日常小學習",
+        "statements": ["學一句方言", "記植物名", "練書法"],
+        "commonality": "文化與技能的微型吸收"
+    },
+    {
+        "theme": "節慶團圓價值",
+        "statements": ["家人團聚", "朋友相聚", "社區共慶"],
+        "commonality": "節日強化人際連結的核心"
+    }
+];
+
+// --- 修訂後的用詞題詞庫 (500 個雙字詞語) ---
+const VOCABULARY_WORDS = [
+    "開朗", "憂鬱", "溫柔", "堅強", "冷靜", "熱情", "謙虛", "驕傲", "誠實", "虛偽",
+    "勇敢", "膽怯", "樂觀", "悲觀", "細心", "粗心", "勤奮", "懶惰", "耐心", "急躁",
+    "友善", "冷漠", "幽默", "嚴肅", "大方", "小氣", "忠誠", "背叛", "正直", "奸詐",
+    "活潑", "文靜", "自信", "自卑", "寬容", "記仇", "感恩", "忘恩", "自律", "放縱",
+    "好奇", "無聊", "浪漫", "務實", "浪漫", "現實", "創新", "守舊", "獨立", "依賴",
+    "穩重", "輕浮", "機智", "愚笨", "慷慨", "吝嗇", "體貼", "自私", "樂觀", "消極",
+    "積極", "被動", "果斷", "猶豫", "專注", "分心", "誠懇", "敷衍", "可靠", "善變",
+    "堅定", "動搖", "純真", "世故", "單純", "複雜", "熱心", "冷淡", "真誠", "做作",
+    "瀟灑", "拘謹", "豪爽", "扭捏", "灑脫", "拘束", "率真", "圓滑", "耿直", "狡猾",
+    "憨厚", "精明", "老實", "油滑", "樸實", "浮誇", "踏實", "虛浮", "認真", "敷衍",
+    "負責", "推託", "盡責", "怠惰", "敬業", "敷衍", "投入", "敷衍", "熱忱", "冷淡",
+    "敬業", "怠工", "專業", "業餘", "熟練", "生疏", "精湛", "粗糙", "流暢", "卡頓",
+    "清晰", "模糊", "明確", "含糊", "準確", "錯誤", "正確", "偏差", "合理", "荒謬",
+    "恰當", "失當", "得體", "失禮", "優雅", "粗俗", "高雅", "低俗", "典雅", "庸俗",
+    "精緻", "粗糙", "細膩", "粗糙", "華麗", "樸素", "簡約", "繁複", "時尚", "過時",
+    "流行", "落伍", "經典", "俗氣", "獨特", "普通", "特別", "平凡", "罕見", "常見",
+    "稀有", "普遍", "珍貴", "廉價", "昂貴", "便宜", "實惠", "昂貴", "經濟", "浪費",
+    "節省", "奢侈", "簡樸", "奢華", "樸素", "華麗", "簡潔", "冗長", "簡明", "囉嗦",
+    "直接", "委婉", "坦率", "含蓄", "直白", "隱晦", "明確", "模糊", "清楚", "混亂",
+    "有序", "雜亂", "整齊", "凌亂", "乾淨", "骯髒", "整潔", "髒亂", "清爽", "悶熱",
+    "涼爽", "炎熱", "寒冷", "溫暖", "舒適", "不適", "愉快", "痛苦", "快樂", "悲傷",
+    "喜悅", "哀傷", "興奮", "沮喪", "激動", "平靜", "平和", "焦躁", "安詳", "煩躁",
+    "放鬆", "緊張", "自在", "拘束", "輕鬆", "沉重", "自由", "束縛", "解放", "壓抑",
+    "開心", "難過", "滿足", "遺憾", "幸福", "不幸", "幸運", "倒霉", "順利", "挫折",
+    "成功", "失敗", "勝利", "敗北", "進步", "退步", "提升", "下降", "改善", "惡化",
+    "增強", "減弱", "擴大", "縮小", "增加", "減少", "上升", "下降", "提高", "降低",
+    "加強", "削弱", "促進", "阻礙", "推動", "阻擋", "加速", "減速", "啟動", "停止",
+    "開始", "結束", "完成", "中斷", "持續", "間斷", "延續", "終止", "延長", "縮短",
+    "擴展", "收縮", "延伸", "縮回", "展開", "收起", "打開", "關閉", "開啟", "關上",
+    "啟用", "停用", "激活", "休眠", "喚醒", "沉睡", "甦醒", "昏迷", "清醒", "迷糊",
+    "明白", "困惑", "理解", "誤解", "領悟", "茫然", "洞察", "盲目", "敏銳", "遲鈍",
+    "靈敏", "麻木", "敏捷", "遲緩", "迅速", "緩慢", "快速", "慢速", "即時", "延遲",
+    "立刻", "稍後", "馬上", "等待", "立即", "拖延", "趕快", "悠閒", "匆忙", "從容",
+    "急促", "緩和", "緊急", "平常", "特殊", "一般", "例外", "正常", "異常", "標準",
+    "非標", "典型", "非典", "普遍", "個別", "共同", "獨特", "相似", "不同", "相同",
+    "相異", "一致", "分歧", "統一", "分散", "集中", "整合", "分裂", "結合", "分離",
+    "連接", "斷開", "連結", "切斷", "串聯", "孤立", "聯合", "分開", "合作", "競爭",
+    "協作", "對抗", "互助", "對立", "支援", "反對", "贊成", "否決", "同意", "拒絕",
+    "接受", "排斥", "歡迎", "驅逐", "接納", "拒絕", "包容", "排擠", "融合", "隔離",
+    "交流", "封閉", "溝通", "隔閡", "互動", "疏離", "接觸", "遠離", "靠近", "離開",
+    "接近", "遠離", "抵達", "出發", "到達", "啟程", "抵達", "返回", "回來", "回去",
+    "歸來", "離去", "離開", "告別", "再見", "重逢", "相遇", "錯過", "邂逅", "重遇",
+    "分開", "團聚", "分散", "聚集", "集合", "解散", "匯聚", "分流", "集中", "分散",
+    "統一", "多元", "單一", "多樣", "豐富", "貧乏", "充實", "空虛", "飽滿", "乾癟",
+    "豐盛", "匱乏", "充足", "短缺", "充裕", "缺乏", "富足", "貧窮", "富裕", "窮困",
+    "富有", "貧困", "豐裕", "匱乏", "飽足", "飢餓", "滿足", "渴望", "期待", "失望",
+    "希望", "絕望", "憧憬", "幻滅", "夢想", "現實", "理想", "實際", "願望", "要求",
+    "需求", "欲望", "慾望", "渴求", "貪婪", "知足", "滿足", "不滿", "抱怨", "感謝",
+    "感激", "怨恨", "憤怒", "平靜", "安寧", "喧鬧", "寂靜", "安靜", "吵鬧", "嘈雜",
+    "寧靜", "混亂", "秩序", "規則", "紀律", "自由", "約束", "限制", "解放", "束縛",
+    "控制", "失控", "掌握", "失去", "擁有", "喪失", "得到", "失去", "獲得", "放棄",
+    "取得", "捨棄", "爭取", "放棄", "追求", "逃避", "面對", "迴避", "正視", "忽視",
+    "關注", "忽略", "重視", "輕視", "看重", "看輕", "尊重", "鄙視", "敬重", "蔑視",
+    "崇拜", "厭惡", "喜愛", "討厭", "喜歡", "憎恨", "愛慕", "嫌棄", "欣賞", "鄙夷",
+    "讚美", "批評", "稱讚", "指責", "表揚", "譴責", "鼓勵", "打擊", "支持", "打壓",
+    "肯定", "否定", "認可", "駁斥", "承認", "否認", "接受", "拒絕", "同意", "反對",
+    "贊同", "異議", "附和", "反駁", "認同", "質疑", "相信", "懷疑", "信任", "猜疑",
+    "信賴", "提防", "依賴", "獨立", "依靠", "自主", "自立", "依附", "獨立", "依賴"
+];
 // --- API 配置 ---
 const API_KEYS = ["sk-p-9-aIT4kSvvL_l4HEAReA"];
 let currentApiKeyIndex = 0;
 const API_URL_BASE = "https://chatapi.akash.network/api/v1/chat/completions";
 const MODEL = "Qwen3-235B-A22B-Instruct-2507-FP8";
-
 // --- DOM 元素獲取 ---
 const ui = {
     container: document.querySelector('.container'),
@@ -530,7 +1520,6 @@ const ui = {
     newCustomQuestionWrapper: document.getElementById('new-custom-question-wrapper'),
     newCustomQuestionButton: document.getElementById('new-custom-question-button'),
 };
-
 // --- 狀態管理 ---
 let currentTool = 'induction'; // 'induction', 'generalization', 'elucidation', 'vocabulary'
 let isCustomMode = false;
@@ -542,7 +1531,6 @@ const usedQuestions = {
     generalization: new Set(),
     vocabulary: new Set()
 };
-
 // --- 本地儲存管理 ---
 function getStorageKey() {
     if (currentTool === 'elucidation') {
@@ -551,7 +1539,6 @@ function getStorageKey() {
     }
     return `usedQuestions_${currentTool}`;
 }
-
 function saveUsedQuestions() {
     try {
         const key = getStorageKey();
@@ -563,7 +1550,6 @@ function saveUsedQuestions() {
         console.error("無法儲存問題至 localStorage:", e);
     }
 }
-
 function loadUsedQuestions() {
     try {
         const key = getStorageKey();
@@ -578,21 +1564,23 @@ function loadUsedQuestions() {
         console.error("無法從 localStorage 讀取問題:", e);
     }
 }
-
-// --- 核心 API 調用函數 ---
-async function getApiResponse(prompt, temperature) {
+// --- 核心 API 調用函數（加入 seed）---
+async function getApiResponse(prompt, temperature, seed = null) {
     try {
+        const body = {
+            model: MODEL,
+            messages: [{ role: "system", content: "You are a helpful assistant that always responds in Traditional Chinese." }, { role: "user", content: prompt }],
+            max_tokens: 800,
+            temperature: temperature
+        };
+        if (seed !== null) {
+            body.seed = seed;
+        }
         const response = await fetch(API_URL_BASE, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${API_KEYS[currentApiKeyIndex]}` },
-            body: JSON.stringify({
-                model: MODEL,
-                messages: [{ role: "system", content: "You are a helpful assistant that always responds in Traditional Chinese." }, { role: "user", content: prompt }],
-                max_tokens: 800,
-                temperature: temperature
-            })
+            body: JSON.stringify(body)
         });
-
         if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
         const data = await response.json();
         if (data.choices && data.choices[0] && data.choices[0].message) {
@@ -605,7 +1593,6 @@ async function getApiResponse(prompt, temperature) {
         return "抱歉，連線好像有點問題，請稍後再試。";
     }
 }
-
 // --- UI 控制 ---
 const UIManager = {
     showLoader: (loader) => { loader.style.display = 'block'; },
@@ -633,10 +1620,8 @@ const UIManager = {
         };
         ui.submitButton.textContent = toolConfig[currentTool].submit;
         ui.answerTextarea.placeholder = toolConfig[currentTool].placeholder;
-
         ui.modeToggleButton.classList.toggle('hidden', currentTool !== 'elucidation');
         ui.questionTypeSelectorWrapper.classList.toggle('hidden', currentTool !== 'elucidation');
-
         const activeButton = document.querySelector(`.tool-button[data-tool="${currentTool}"]`);
         if (activeButton) {
             ui.toolUnderline.style.width = `${activeButton.offsetWidth}px`;
@@ -644,47 +1629,37 @@ const UIManager = {
         }
     }
 };
-
 // --- 主工具切換邏輯 ---
 function switchTool(newTool) {
     if (newTool === currentTool && !isCustomMode) return;
-    
     currentTool = newTool;
     isCustomMode = false;
-
     ui.toolButtons.forEach(btn => {
         btn.classList.toggle('active', btn.dataset.tool === newTool);
     });
-    
     UIManager.updateToolUI();
     getNewQuestion();
 }
-
 // --- 題目生成邏輯 (路由) ---
 function getNewQuestion(isRefresh = false) {
     UIManager.resetUI();
     UIManager.showLoader(ui.questionLoader);
-    
     ui.refreshQuestionButton.classList.remove('hidden');
-    
     const questionFetchers = {
         elucidation: getElucidationQuestion,
         induction: getInductionQuestion,
         generalization: getGeneralizationQuestion,
         vocabulary: getVocabularyQuestion,
     };
-    
     if (questionFetchers[currentTool]) {
         questionFetchers[currentTool](isRefresh);
     }
 }
-
 // --- 闡釋 (Elucidation) ---
 async function getElucidationQuestion(isRefresh = false) {
     const type = document.querySelector('.type-button.active').dataset.type;
     loadUsedQuestions();
     const currentUsedSet = usedQuestions[`elucidation_${type}`];
-
     let basePrompt, examplePrompt;
     if (type === 'life') {
         basePrompt = "請用繁體中文為我生成一個簡短、個人化、關於日常偏好或經驗的闡釋思維訓練問題。";
@@ -693,96 +1668,49 @@ async function getElucidationQuestion(isRefresh = false) {
         basePrompt = "請用繁體中文為我生成一個簡短、生活化、但又能引發思考的問題。";
         examplePrompt = "例如：「為什麼整理房間能讓心情變好？」、「為什麼我們會在意陌生人的看法？」、「為什麼我們會對舊物品產生感情？」。";
     }
-
     let prompt = `${basePrompt}問題必須以「為什麼」或「如何」開頭。問題長度必須嚴格限制在 15 個字以內。${examplePrompt}請只輸出問題本身，不要有任何多餘文字或引號。`;
-
     if (currentUsedSet.size > 0) {
         const questionsToAvoid = [...currentUsedSet].join('\n- ');
-        prompt += `\n\n請務必生成一個全新的問題。為了避免重複，絕對不要生成以下列表中的任何一個問題：\n- ${questionsToAvoid}`;
+        prompt += `\n請務必生成一個全新的問題。為了避免重複，絕對不要生成以下列表中的任何一個問題：\n- ${questionsToAvoid}`;
     }
-    if (isRefresh) prompt += `\n\n(這是一個刷新請求，請確保問題是新的)`;
-
-    const newQuestion = await getApiResponse(prompt, 0.95);
-    
+    if (isRefresh) prompt += `\n(這是一個刷新請求，請確保問題是新的)`;
+    // 生成唯一 seed
+    const seed = Date.now();
+    const newQuestion = await getApiResponse(prompt, 0.95, seed);
     if (!newQuestion.startsWith("抱歉")) {
         currentUsedSet.add(newQuestion);
         saveUsedQuestions();
     }
-
     UIManager.hideLoader(ui.questionLoader);
     ui.questionContainer.textContent = newQuestion;
     ui.questionContainer.style.opacity = 1;
     ui.answerContainer.classList.remove('hidden');
 }
-
 // --- 歸納 (Induction) ---
 async function getInductionQuestion(isRefresh = false) {
     loadUsedQuestions();
     const currentUsedSet = usedQuestions.induction;
-let prompt = `請用繁體中文生成一個「歸納」思維訓練題目。你的輸出必須是一個 JSON 物件，格式如下：
-{ 
-  "statements": ["一個陳述句", "另一個相關的陳述句", "第三個相關的陳述句"],
-  "ideal_summary": "歸納出的共通點"
-}
-
-### 規則與要求:
-1.  **JSON 格式**: 嚴格遵守上述 JSON 結構，不要輸出任何額外文字或代碼標記。
-2.  **陳述句 (statements)**: 
-    *   必須是包含 3 個相關句子的陣列。
-    *   內容必須是情節、事實或觀點，避免需要高深的專業知識。
-3.  **理想答案 (ideal_summary)**: 必須是總結所有陳述句共通點的一個精準短語。
-4.  **【重要】主題與難度**: 題目主題必須多元化，且難度應保持簡單、貼近生活常識。
-
-### 優質範例參考 (風格與難度指引):
-以下是幾個符合要求的優質範例。請注意它們的共同點：主題簡單直觀、貼近日常生活、不需要特定領域的專業知識。請以這種風格和難度為標準來生成新題目。
-
-*   **主題：物品功能**
-    *   陳述：保溫瓶讓熱水保溫、防火衣能抵禦高溫、外送保溫袋確保食物溫度。
-    *   共通點：隔絕溫度變化的功能。
-
-*   **主題：事前準備**
-    *   陳述：煮菜前要先備料、畫畫前要先打底稿、簡報前要先排練。
-    *   共通點：在主要行動前的準備工作。
-
-*   **主題：生命型態轉變**
-    *   陳述：秋天葉子會變色、毛毛蟲會變蝴蝶、蝌蚪會變青蛙。
-    *   共通點：生命型態的轉變過程。
-
-*   **主題：行為與後果**
-    *   陳述：濕手碰開關可能觸電、圖書館大聲會打擾別人、不運動體能會下降。
-    *   共通點：行為引發的負面後果。
-
-現在，請根據以上所有規則與範例，為我生成一個全新的、簡單且多元化的題目。`;
-
-    if (currentUsedSet.size > 0) {
-        const summariesToAvoid = [...currentUsedSet].join('", "');
-        prompt += `\n\n為了避免重複，請確保生成的 "ideal_summary" 不要是以下任何一個：["${summariesToAvoid}"]`;
+    // 從本地範例中隨機選擇一個作為參考（但實際直接使用本地題庫）
+    const availableExamples = INDUCTION_EXAMPLES.filter(ex => !currentUsedSet.has(ex.commonality));
+    let selectedExample;
+    if (availableExamples.length > 0) {
+        selectedExample = availableExamples[Math.floor(Math.random() * availableExamples.length)];
+    } else {
+        // 若全部用過，重置
+        currentUsedSet.clear();
+        selectedExample = INDUCTION_EXAMPLES[Math.floor(Math.random() * INDUCTION_EXAMPLES.length)];
     }
-
-    const response = await getApiResponse(prompt, 0.9);
-    
-    try {
-        const data = JSON.parse(response);
-        if (data.statements && data.ideal_summary) {
-            currentQuestionData = data;
-            currentUsedSet.add(data.ideal_summary);
-            saveUsedQuestions();
-
-            let statementsHtml = '<ul class="induction-statements">';
-            data.statements.forEach(stmt => { statementsHtml += `<li>${stmt}</li>`; });
-            statementsHtml += '</ul>';
-            ui.questionContainer.innerHTML = statementsHtml;
-        } else { throw new Error('Invalid JSON structure'); }
-    } catch (e) {
-        console.error("Failed to parse induction question:", e);
-        ui.questionContainer.textContent = "題目生成失敗，請重試。";
-    }
-
+    currentQuestionData = selectedExample;
+    currentUsedSet.add(selectedExample.commonality);
+    saveUsedQuestions();
+    let statementsHtml = '<ul class="induction-statements">';
+    selectedExample.statements.forEach(stmt => { statementsHtml += `<li>${stmt}</li>`; });
+    statementsHtml += '</ul>';
+    ui.questionContainer.innerHTML = statementsHtml;
     UIManager.hideLoader(ui.questionLoader);
     ui.questionContainer.style.opacity = 1;
     ui.answerContainer.classList.remove('hidden');
 }
-
 // --- 概括 (Generalization) ---
 async function getGeneralizationQuestion(isRefresh = false) {
     loadUsedQuestions();
@@ -797,21 +1725,19 @@ async function getGeneralizationQuestion(isRefresh = false) {
 - "poor_summary" 必須明顯地比 "ideal_summary" 差。
 - 題目內容必須多元化。
 - 請直接輸出 JSON 物件，絕對不要有任何其他文字或代碼標記。`;
-    
      if (currentUsedSet.size > 0) {
         const summariesToAvoid = [...currentUsedSet].join('", "');
-        prompt += `\n\n為了避免重複，請確保生成的 "ideal_summary" 不要是以下任何一個：["${summariesToAvoid}"]`;
+        prompt += `\n為了避免重複，請確保生成的 "ideal_summary" 不要是以下任何一個：["${summariesToAvoid}"]`;
     }
-
-    const response = await getApiResponse(prompt, 0.8);
-
+    if (isRefresh) prompt += `\n(這是一個刷新請求，請確保內容是全新的)`;
+    const seed = Date.now() + Math.floor(Math.random() * 10000);
+    const response = await getApiResponse(prompt, 0.8, seed);
     try {
         const data = JSON.parse(response);
         if (data.passage && data.poor_summary && data.ideal_summary) {
             currentQuestionData = data;
             currentUsedSet.add(data.ideal_summary);
             saveUsedQuestions();
-
             ui.questionContainer.innerHTML = `
                 <div class="generalization-passage">${data.passage}</div>
                 <div class="generalization-poor-summary"><strong>差劣示例：</strong>${data.poor_summary}</div>
@@ -821,16 +1747,24 @@ async function getGeneralizationQuestion(isRefresh = false) {
         console.error("Failed to parse generalization question:", e);
         ui.questionContainer.textContent = "題目生成失敗，請重試。";
     }
-    
     UIManager.hideLoader(ui.questionLoader);
     ui.questionContainer.style.opacity = 1;
     ui.answerContainer.classList.remove('hidden');
 }
-
 // --- 用詞 (Vocabulary) (修訂後) ---
 async function getVocabularyQuestion(isRefresh = false) {
     loadUsedQuestions();
     const currentUsedSet = usedQuestions.vocabulary;
+    // 從本地詞庫中隨機選擇一個詞語作為答案
+    const availableWords = VOCABULARY_WORDS.filter(word => !currentUsedSet.has(word));
+    let selectedWord;
+    if (availableWords.length > 0) {
+        selectedWord = availableWords[Math.floor(Math.random() * availableWords.length)];
+    } else {
+        // 如果所有詞都用過了，重置
+        currentUsedSet.clear();
+        selectedWord = VOCABULARY_WORDS[Math.floor(Math.random() * VOCABULARY_WORDS.length)];
+    }
     let prompt = `請用繁體中文生成一個「用詞」思維訓練題目。你的輸出必須是一個 JSON 物件，格式如下：
 {
   "description": "一段約 60字的描述，要與科學、機械、工程及農業無關，這段描述指向一個特定的中文詞語（名詞、動詞或形容詞），但描述中絕對不能出現答案詞語本身或其同義詞。",
@@ -841,32 +1775,24 @@ async function getVocabularyQuestion(isRefresh = false) {
 - "fill_in_sentence" 必須自然地將答案詞語置入語境中，並使用 '_________' 作為填充底線。
 - "answer" 必須是一個常見但具體的詞語。
 - 重要：題目內容必須多元化，涵蓋不同情景與概念，可用但避免過於集中在心理、性格、感情等抽象主題。
-- 請直接輸出 JSON 物件，絕對不要有任何其他文字或代碼標記。`;
-
-    if (currentUsedSet.size > 0) {
-        const answersToAvoid = [...currentUsedSet].join('", "');
-        prompt += `\n\n為了避免重複，請確保生成的 "answer" 不要是以下任何一個：["${answersToAvoid}"]`;
-    }
-
-    const response = await getApiResponse(prompt, 0.9);
-
+- 請直接輸出 JSON 物件，絕對不要有任何其他文字或代碼標記。
+請使用以下詞語作為答案來生成題目：
+"${selectedWord}"`;
+    if (isRefresh) prompt += `\n(這是一個刷新請求，請確保內容是全新的)`;
+    const seed = Date.now() + Math.floor(Math.random() * 10000);
+    const response = await getApiResponse(prompt, 0.9, seed);
     try {
         const data = JSON.parse(response);
         if (data.description && data.fill_in_sentence && data.answer) {
             currentQuestionData = data;
             currentUsedSet.add(data.answer);
             saveUsedQuestions();
-
-            // 將底線用帶有 class 的 span 包裹起來
-            const formattedSentence = data.fill_in_sentence.replace(
-                /_{5,}|X{5,}/g, 
-                '<span class="fill-in-line">_________</span>'
-            );
-
+            // 用底線替換答案，確保不顯示答案
+            const sentenceWithBlank = data.fill_in_sentence.replace(/_{5,}|X{5,}/, '_________');
             ui.questionContainer.innerHTML = `
                 <div class="vocabulary-description">${data.description}</div>
-                <div class="vocabulary-fill-in-blank">
-                    ${formattedSentence}
+                <div class="vocabulary-fill-in-blank-container">
+                    ${sentenceWithBlank}
                 </div>
             `;
         } else { throw new Error('Invalid JSON structure'); }
@@ -874,13 +1800,10 @@ async function getVocabularyQuestion(isRefresh = false) {
         console.error("Failed to parse vocabulary question:", e);
         ui.questionContainer.textContent = "題目生成失敗，請重試。";
     }
-
     UIManager.hideLoader(ui.questionLoader);
     ui.questionContainer.style.opacity = 1;
     ui.answerContainer.classList.remove('hidden');
 }
-
-
 // --- 提交與回饋 (路由) ---
 async function getFeedback() {
     const userAnswer = ui.answerTextarea.value.trim();
@@ -888,11 +1811,9 @@ async function getFeedback() {
         alert("請先輸入您的答案。");
         return;
     }
-
     ui.submitButton.disabled = true;
     ui.answerTextarea.disabled = true;
     UIManager.showLoader(ui.feedbackLoader);
-    
     let prompt = "";
     const feedbackPrompts = {
         elucidation: () => {
@@ -955,25 +1876,19 @@ async function getFeedback() {
 3. **分隔符與範例**: 在評語後換行輸出 "---"，然後提供理想答案，並可選擇性地附上一句簡短的解釋。例如：「${currentQuestionData.answer}：這個詞精準地捕捉了...的精髓。」`;
         }
     };
-
     prompt = feedbackPrompts[currentTool]();
     const feedbackText = await getApiResponse(prompt, 0.5);
     renderFeedback(feedbackText);
 }
-
 function renderFeedback(feedbackText) {
     UIManager.hideLoader(ui.feedbackLoader);
-
     const scoreMatch = feedbackText.match(/\[SCORE:\s*(\d+)\s*\]/);
     const score = scoreMatch ? scoreMatch[1] : null;
-
     const feedbackWithoutScore = feedbackText.replace(/\[SCORE:\s*(\d+)\s*\]\n?/, '').trim();
     const parts = feedbackWithoutScore.split('---');
     const critique = parts[0]?.trim();
     const exampleRaw = parts[1]?.trim();
-
     let finalHtml = '';
-
     if (score) {
         finalHtml += `
             <div class="feedback-section">
@@ -983,7 +1898,6 @@ function renderFeedback(feedbackText) {
                 </div>
             </div>`;
     }
-
     if (critique) {
         finalHtml += `
             <div class="feedback-section">
@@ -991,7 +1905,6 @@ function renderFeedback(feedbackText) {
                 <p class="feedback-content">${critique}</p>
             </div>`;
     }
-
     if (exampleRaw) {
         let exampleHtml;
         if (currentTool === 'elucidation') {
@@ -1011,28 +1924,22 @@ function renderFeedback(feedbackText) {
                 ${exampleHtml}
             </div>`;
     }
-
     if (finalHtml.trim() === '') {
         ui.feedbackContainer.innerHTML = `<div class="feedback-section"><p class="feedback-content">抱歉，回饋解析失敗，請稍後再試。</p></div>`;
     } else {
         ui.feedbackContainer.innerHTML = finalHtml;
     }
-
     ui.feedbackContainer.classList.add('visible');
-    
     if (isCustomMode) {
         ui.newCustomQuestionWrapper.classList.remove('hidden');
     } else {
         ui.nextQuestionWrapper.classList.remove('hidden');
     }
 }
-
-
 // --- 闡釋: 自訂模式相關 ---
 function toggleInputMode() {
     isCustomMode = !isCustomMode;
     UIManager.resetUI();
-
     if (isCustomMode) {
         ui.questionTypeSelectorWrapper.classList.add('hidden');
         ui.refreshQuestionButton.classList.add('hidden');
@@ -1049,7 +1956,6 @@ function toggleInputMode() {
         getNewQuestion();
     }
 }
-
 function startNewCustomQuestion() {
     UIManager.resetUI();
     ui.questionContainer.setAttribute('contenteditable', 'true');
@@ -1057,21 +1963,17 @@ function startNewCustomQuestion() {
     ui.answerContainer.classList.remove('hidden');
     ui.questionContainer.focus();
 }
-
-
 // --- 事件監聽 ---
 ui.submitButton.addEventListener('click', getFeedback);
 ui.nextQuestionButton.addEventListener('click', () => getNewQuestion(false));
 ui.refreshQuestionButton.addEventListener('click', () => getNewQuestion(true));
 ui.modeToggleButton.addEventListener('click', toggleInputMode);
 ui.newCustomQuestionButton.addEventListener('click', startNewCustomQuestion);
-
 ui.toolButtons.forEach(button => {
     button.addEventListener('click', () => {
         switchTool(button.dataset.tool);
     });
 });
-
 ui.typeButtons.forEach(button => {
     button.addEventListener('click', () => {
         if (!button.classList.contains('active')) {
@@ -1081,17 +1983,13 @@ ui.typeButtons.forEach(button => {
         }
     });
 });
-
 // --- 頁面首次加載 ---
 document.addEventListener('DOMContentLoaded', () => {
     const defaultTool = 'induction';
     currentTool = defaultTool;
     document.querySelector(`.tool-button[data-tool="${defaultTool}"]`).classList.add('active');
     UIManager.updateToolUI();
-
 });
-
 </script>
-
 </body>
-    </html>
+</html>
