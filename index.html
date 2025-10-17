@@ -1454,7 +1454,10 @@ const VOCABULARY_WORDS = [
     "信賴", "提防", "依賴", "獨立", "依靠", "自主", "自立", "依附", "獨立", "依賴"
 ];
 // --- API 配置 ---
-const API_KEYS = ["sk-p-9-aIT4kSvvL_l4HEAReA"];
+const API_KEYS = [
+    "sk-p-9-aIT4kSvvL_l4HEAReA",   // 原本的 key
+    "sk-ugZDzju3AbV2QeJS1Y415Q"
+];
 let currentApiKeyIndex = 0;
 const API_URL_BASE = "https://chatapi.akash.network/api/v1/chat/completions";
 const MODEL = "Qwen3-235B-A22B-Instruct-2507-FP8";
@@ -1527,33 +1530,63 @@ function loadUsedQuestions() {
 }
 // --- 核心 API 調用函數（加入 seed）---
 async function getApiResponse(prompt, temperature, seed = null) {
-    try {
-        const body = {
-            model: MODEL,
-            messages: [{ role: "system", content: "You are a helpful assistant that always responds in Traditional Chinese." }, { role: "user", content: prompt }],
-            max_tokens: 800,
-            temperature: temperature
-        };
-        if (seed !== null) {
-            body.seed = seed;
+    const maxRetries = API_KEYS.length;
+    let lastError = null;
+
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+        const apiKey = API_KEYS[currentApiKeyIndex];
+        try {
+            const body = {
+                model: MODEL,
+                messages: [
+                    { role: "system", content: "You are a helpful assistant that always responds in Traditional Chinese." },
+                    { role: "user", content: prompt }
+                ],
+                max_tokens: 800,
+                temperature: temperature
+            };
+            if (seed !== null) body.seed = seed;
+
+            const response = await fetch(API_URL_BASE, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${apiKey}`
+                },
+                body: JSON.stringify(body)
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                if (data.choices?.[0]?.message?.content) {
+                    return data.choices[0].message.content.trim();
+                } else {
+                    throw new Error('Invalid API response format');
+                }
+            } else {
+                const status = response.status;
+                console.warn(`API call failed with key index ${currentApiKeyIndex}: HTTP ${status}`);
+                // 若為 401/403/429，切換 key 並重試
+                if ([401, 403, 429].includes(status)) {
+                    currentApiKeyIndex = (currentApiKeyIndex + 1) % API_KEYS.length;
+                    lastError = new Error(`Key ${apiKey} failed with status ${status}`);
+                    continue;
+                } else {
+                    // 其他錯誤（如 500）直接拋出
+                    throw new Error(`Server error: ${status}`);
+                }
+            }
+        } catch (error) {
+            console.error(`Attempt ${attempt + 1} with key ${currentApiKeyIndex} failed:`, error);
+            lastError = error;
+            currentApiKeyIndex = (currentApiKeyIndex + 1) % API_KEYS.length;
         }
-        const response = await fetch(API_URL_BASE, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${API_KEYS[currentApiKeyIndex]}` },
-            body: JSON.stringify(body)
-        });
-        if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
-        const data = await response.json();
-        if (data.choices && data.choices[0] && data.choices[0].message) {
-            return data.choices[0].message.content.trim();
-        } else {
-            throw new Error('Invalid API response format');
-        }
-    } catch (error) {
-        console.error("API Request Failed:", error);
-        return "抱歉，連線好像有點問題，請稍後再試。";
     }
+
+    console.error("All API keys exhausted. Last error:", lastError);
+    return "抱歉，目前無法連接服務，請稍後再試。";
 }
+
 // --- UI 控制 ---
 const UIManager = {
     showLoader: (loader) => { loader.style.display = 'block'; },
@@ -1926,8 +1959,20 @@ function startNewCustomQuestion() {
 }
 // --- 事件監聽 ---
 ui.submitButton.addEventListener('click', getFeedback);
+
 ui.nextQuestionButton.addEventListener('click', () => getNewQuestion(false));
-ui.refreshQuestionButton.addEventListener('click', () => getNewQuestion(true));
+
+// 替換這一行 ↓
+// ui.refreshQuestionButton.addEventListener('click', () => getNewQuestion(true));
+// 改為以下防連點版本 ↓
+let isRefreshing = false;
+ui.refreshQuestionButton.addEventListener('click', () => {
+    if (isRefreshing) return;
+    isRefreshing = true;
+    getNewQuestion(true);
+    setTimeout(() => { isRefreshing = false; }, 2000); // 2秒冷卻
+});
+
 ui.modeToggleButton.addEventListener('click', toggleInputMode);
 ui.newCustomQuestionButton.addEventListener('click', startNewCustomQuestion);
 ui.toolButtons.forEach(button => {
